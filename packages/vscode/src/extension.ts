@@ -15,7 +15,10 @@ export function activate(context: vscode.ExtensionContext) {
     languageServer.start();
 
     // Register custom editor provider for .view.vrn files
-    const editorProvider = new VisualEditorProvider(context);
+    const editorProvider = new VisualEditorProvider(
+        context, 
+        () => languageServer?.getPort() || 0
+    );
     context.subscriptions.push(
         vscode.window.registerCustomEditorProvider(
             VisualEditorProvider.viewType,

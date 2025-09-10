@@ -1,4 +1,5 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
@@ -48,7 +49,7 @@ const webviewConfig = {
   target: ['web', 'es2020'],
   mode: 'none',
   
-  entry: './src/webview/index.ts',
+  entry: './src/webview/index.tsx',
   output: {
     path: path.resolve(__dirname, 'webview'),
     filename: 'index.js'
@@ -73,6 +74,12 @@ const webviewConfig = {
       }
     ]
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src/webview/index.html'),
+      filename: 'index.html'
+    })
+  ],
   devtool: 'nosources-source-map'
 };
 

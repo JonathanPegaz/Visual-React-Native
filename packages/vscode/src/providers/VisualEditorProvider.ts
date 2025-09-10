@@ -1,10 +1,14 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = 'visual-rn.editor';
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private readonly getServerPort: () => number
+  ) {}
 
   public async resolveCustomTextEditor(
     document: vscode.TextDocument,
@@ -78,16 +82,58 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   private getHtmlForWebview(webview: vscode.Webview, document: vscode.TextDocument): string {
-    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview
+    try {
+      // Try to use the webpack-generated HTML
+      const htmlPath = path.join(this.context.extensionPath, 'webview', 'index.html');
+      
+      if (fs.existsSync(htmlPath)) {
+        let html = fs.readFileSync(htmlPath, 'utf-8');
+        
+        // Replace template variables
+        html = html.replace(/<%= htmlWebpackPlugin\.options\.filePath %>/g, document.uri.fsPath);
+        html = html.replace(/<%= htmlWebpackPlugin\.options\.serverPort %>/g, this.getServerPort().toString());
+        
+        // Update CSP and convert URIs
+        const scriptMatches = html.match(/src="([^"]+\.js)"/g) || [];
+        const styleMatches = html.match(/href="([^"]+\.css)"/g) || [];
+        
+        scriptMatches.forEach(match => {
+          const src = match.match(/src="([^"]+)"/)?.[1];
+          if (src) {
+            const scriptUri = webview.asWebviewUri(
+              vscode.Uri.joinPath(this.context.extensionUri, 'webview', src)
+            );
+            html = html.replace(match, `src="${scriptUri}"`);
+          }
+        });
+        
+        styleMatches.forEach(match => {
+          const href = match.match(/href="([^"]+)"/)?.[1];
+          if (href) {
+            const styleUri = webview.asWebviewUri(
+              vscode.Uri.joinPath(this.context.extensionUri, 'webview', href)
+            );
+            html = html.replace(match, `href="${styleUri}"`);
+          }
+        });
+        
+        // Update CSP
+        html = html.replace(
+          /content="[^"]*"/,
+          `content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval'; connect-src ws: wss: http: https:;"`
+        );
+        
+        return html;
+      }
+    } catch (error) {
+      console.error('Failed to load webpack-generated HTML, falling back to manual HTML:', error);
+    }
+    
+    // Fallback to manual HTML generation
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, 'webview', 'index.js')
     );
 
-    const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, 'webview', 'index.css')
-    );
-
-    // Get nonce for security
     const nonce = this.getNonce();
 
     return `<!DOCTYPE html>
@@ -95,21 +141,22 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}' 'unsafe-eval'; connect-src ws://localhost:*;">
-    <link href="${styleUri}" rel="stylesheet">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' 'unsafe-eval'; connect-src ws: wss:;">
     <title>Visual RN Editor</title>
 </head>
 <body>
     <div id="root">
-        <div class="loading">
-            <div class="loading-spinner"></div>
-            <p>Loading Visual Editor...</p>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 16px; font-family: 'Segoe UI', sans-serif;">
+            <div style="width: 32px; height: 32px; border: 3px solid #333; border-top: 3px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: #888;">Loading Visual Editor...</p>
         </div>
     </div>
 
     <script nonce="${nonce}">
         window.vscode = acquireVsCodeApi();
         window.filePath = '${document.uri.fsPath}';
+        window.serverPort = '${this.getServerPort()}';
+        window.pendingMessages = [];
         
         // Handle messages from extension
         window.addEventListener('message', event => {
@@ -117,14 +164,14 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
             if (window.visualRNEditor) {
                 window.visualRNEditor.handleMessage(message);
             } else {
-                // Store messages until editor is ready
-                window.pendingMessages = window.pendingMessages || [];
                 window.pendingMessages.push(message);
             }
         });
 
-        // Notify extension that webview is ready
-        window.vscode.postMessage({ type: 'ready' });
+        // Add spinner animation
+        const style = document.createElement('style');
+        style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
     </script>
     
     <script nonce="${nonce}" src="${scriptUri}"></script>
