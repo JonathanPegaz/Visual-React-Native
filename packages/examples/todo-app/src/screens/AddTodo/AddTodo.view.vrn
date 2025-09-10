@@ -1,0 +1,87 @@
+import { Screen, Stack, HStack, Text, Button, Input, Card } from '@visual-rn/core';
+
+export default function AddTodoView({
+  title,
+  description,
+  onTitleChange,
+  onDescriptionChange,
+  onSave,
+  onCancel,
+  canSave
+}) {
+  return (
+    <Screen safe bg="gray.50" p={4}>
+      <Stack spacing={4}>
+        {/* Header */}
+        <HStack justify="space-between" align="center">
+          <Text variant="h2" color="gray.900">
+            Add New Todo
+          </Text>
+          <Button variant="ghost" onPress={onCancel}>
+            Cancel
+          </Button>
+        </HStack>
+
+        {/* Form */}
+        <Card p={4}>
+          <Stack spacing={4}>
+            <Stack spacing={2}>
+              <Text variant="label" color="gray.700">
+                Title *
+              </Text>
+              <Input
+                placeholder="Enter todo title..."
+                value={title}
+                onChangeText={onTitleChange}
+              />
+            </Stack>
+
+            <Stack spacing={2}>
+              <Text variant="label" color="gray.700">
+                Description
+              </Text>
+              <Input
+                placeholder="Enter description (optional)..."
+                value={description}
+                onChangeText={onDescriptionChange}
+                multiline={true}
+              />
+            </Stack>
+          </Stack>
+        </Card>
+
+        {/* Actions */}
+        <HStack spacing={3} justify="flex-end">
+          <Button variant="ghost" onPress={onCancel}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onPress={onSave}
+            disabled={!canSave}
+          >
+            Add Todo
+          </Button>
+        </HStack>
+
+        {/* Tips */}
+        <Card p={3} bg="blue.50">
+          <Stack spacing={2}>
+            <Text variant="caption" color="blue.600">
+              💡 Tips for great todos:
+            </Text>
+            <Text variant="caption" color="blue.600">
+              • Keep titles short and actionable
+            </Text>
+            <Text variant="caption" color="blue.600">
+              • Add descriptions for complex tasks
+            </Text>
+            <Text variant="caption" color="blue.600">
+              • Use specific language ("Call John" vs "Make phone call")
+            </Text>
+          </Stack>
+        </Card>
+      </Stack>
+    </Screen>
+  );
+}

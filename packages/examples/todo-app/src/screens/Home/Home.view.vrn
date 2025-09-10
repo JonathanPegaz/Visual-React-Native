@@ -1,0 +1,62 @@
+import React from 'react';
+import { Screen, Stack, Text, Button, Card } from '@visual-rn/core';
+
+/**
+ * @vrn-bindings
+ * state: {
+ *   welcomeMessage: string,
+ *   buttonPressed: boolean
+ * }
+ * actions: {
+ *   handlePress: () => void
+ * }
+ */
+export default function HomeView({ state, actions }) {
+  return (
+    <Screen safe bg="background">
+      <Stack spacing={6} p={5} justify="center" flex={1}>
+        <Text variant="h1" align="center" color="primary">
+          Welcome to TodoApp
+        </Text>
+        
+        <Card p={5} shadow="md" rounded="lg">
+          <Stack spacing={4}>
+            <Text variant="h3" align="center">
+              🎨 Visual React Native
+            </Text>
+            
+            <Text variant="body" align="center" color="textLight">
+              {state.welcomeMessage}
+            </Text>
+            
+            <Button
+              variant="primary"
+              onPress={actions.handlePress}
+              fullWidth
+            >
+              {state.buttonPressed ? '✓ Pressed!' : 'Press Me'}
+            </Button>
+          </Stack>
+        </Card>
+        
+        <Stack spacing={3}>
+          <Text variant="caption" align="center" color="textLight">
+            Next Steps:
+          </Text>
+          
+          <Text variant="body" align="center">
+            • Open this file in VS Code
+          </Text>
+          
+          <Text variant="body" align="center">
+            • Install Visual RN Editor extension
+          </Text>
+          
+          <Text variant="body" align="center">
+            • Click "Open Visual Editor"
+          </Text>
+        </Stack>
+      </Stack>
+    </Screen>
+  );
+}

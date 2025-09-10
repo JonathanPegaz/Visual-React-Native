@@ -1,5 +1,9 @@
 import fs from 'fs-extra';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function ensureDirectory(dirPath: string): Promise<void> {
   await fs.ensureDir(dirPath);
@@ -71,7 +75,7 @@ export async function createFromTemplate(
   projectName: string,
   additionalReplacements: Record<string, string> = {}
 ): Promise<void> {
-  const templatePath = path.join(process.cwd(), 'packages/cli/templates', templateName);
+  const templatePath = path.join(__dirname, '../../templates', templateName);
   
   const replacements = {
     '{{PROJECT_NAME}}': projectName,

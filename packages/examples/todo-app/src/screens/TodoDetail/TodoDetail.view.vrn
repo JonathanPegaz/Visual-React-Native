@@ -1,0 +1,184 @@
+import { Screen, Stack, HStack, Text, Button, Input, Card, Divider } from '@visual-rn/core';
+
+export default function TodoDetailView({
+  todo,
+  isEditing,
+  editTitle,
+  editDescription,
+  onTitleChange,
+  onDescriptionChange,
+  onToggleEdit,
+  onSave,
+  onCancel,
+  onToggleComplete,
+  onDelete,
+  onBack,
+  canSave
+}) {
+  if (!todo) {
+    return (
+      <Screen safe bg="gray.50" p={4}>
+        <Stack spacing={4}>
+          <HStack justify="space-between" align="center">
+            <Text variant="h2" color="gray.900">
+              Todo Not Found
+            </Text>
+            <Button variant="ghost" onPress={onBack}>
+              Back
+            </Button>
+          </HStack>
+          <Card p={4}>
+            <Text variant="body" color="gray.500" align="center">
+              This todo could not be found.
+            </Text>
+          </Card>
+        </Stack>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen safe bg="gray.50" p={4}>
+      <Stack spacing={4}>
+        {/* Header */}
+        <HStack justify="space-between" align="center">
+          <HStack align="center" spacing={3}>
+            <Button variant="ghost" onPress={onBack}>
+              ← Back
+            </Button>
+            <Text variant="h2" color="gray.900">
+              Todo Details
+            </Text>
+          </HStack>
+          
+          {!isEditing && (
+            <Button variant="ghost" onPress={onToggleEdit}>
+              Edit
+            </Button>
+          )}
+        </HStack>
+
+        {/* Todo Content */}
+        <Card p={4}>
+          <Stack spacing={4}>
+            {/* Title */}
+            <Stack spacing={2}>
+              <Text variant="label" color="gray.700">
+                Title
+              </Text>
+              {isEditing ? (
+                <Input
+                  value={editTitle}
+                  onChangeText={onTitleChange}
+                  placeholder="Enter todo title..."
+                />
+              ) : (
+                <Text 
+                  variant="h3" 
+                  color={todo.completed ? 'gray.400' : 'gray.900'}
+                >
+                  {todo.title}
+                </Text>
+              )}
+            </Stack>
+
+            {/* Description */}
+            <Stack spacing={2}>
+              <Text variant="label" color="gray.700">
+                Description
+              </Text>
+              {isEditing ? (
+                <Input
+                  value={editDescription}
+                  onChangeText={onDescriptionChange}
+                  placeholder="Enter description (optional)..."
+                  multiline={true}
+                />
+              ) : (
+                <Text variant="body" color="gray.600">
+                  {todo.description || 'No description provided.'}
+                </Text>
+              )}
+            </Stack>
+
+            <Divider />
+
+            {/* Status */}
+            <HStack justify="space-between" align="center">
+              <Stack spacing={1}>
+                <Text variant="label" color="gray.700">
+                  Status
+                </Text>
+                <Text 
+                  variant="body" 
+                  color={todo.completed ? 'green.600' : 'orange.600'}
+                >
+                  {todo.completed ? '✓ Completed' : '○ Active'}
+                </Text>
+              </Stack>
+
+              <Button
+                variant={todo.completed ? 'ghost' : 'primary'}
+                onPress={onToggleComplete}
+              >
+                Mark as {todo.completed ? 'Active' : 'Done'}
+              </Button>
+            </HStack>
+
+            {/* Created Date */}
+            <Stack spacing={1}>
+              <Text variant="label" color="gray.700">
+                Created
+              </Text>
+              <Text variant="caption" color="gray.500">
+                {new Date(todo.createdAt).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric'
+                })}
+              </Text>
+            </Stack>
+          </Stack>
+        </Card>
+
+        {/* Actions */}
+        {isEditing ? (
+          <HStack spacing={3}>
+            <Button variant="ghost" onPress={onCancel} fullWidth>
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              onPress={onSave}
+              disabled={!canSave}
+              fullWidth
+            >
+              Save Changes
+            </Button>
+          </HStack>
+        ) : (
+          <HStack spacing={3}>
+            <Button variant="ghost" onPress={onToggleEdit} fullWidth>
+              Edit Todo
+            </Button>
+            <Button variant="danger" onPress={onDelete} fullWidth>
+              Delete Todo
+            </Button>
+          </HStack>
+        )}
+
+        {/* Tips Card */}
+        {isEditing && (
+          <Card p={3} bg="blue.50">
+            <Text variant="caption" color="blue.600">
+              💡 Tip: Use clear, actionable titles and detailed descriptions to make your todos more effective.
+            </Text>
+          </Card>
+        )}
+      </Stack>
+    </Screen>
+  );
+}

@@ -1,0 +1,129 @@
+import { Screen, Stack, HStack, Text, Button, Card } from '@visual-rn/core';
+
+export default function TodoListView({
+  todos,
+  filter,
+  onAddTodo,
+  onToggleTodo,
+  onDeleteTodo,
+  onFilterChange,
+  onViewTodo
+}) {
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'completed') return todo.completed;
+    if (filter === 'active') return !todo.completed;
+    return true; // all
+  });
+
+  return (
+    <Screen safe bg="gray.50" p={4}>
+      <Stack spacing={4}>
+        {/* Header */}
+        <HStack justify="space-between" align="center">
+          <Text variant="h1" color="primary">
+            My Todos
+          </Text>
+          <Button variant="primary" onPress={onAddTodo}>
+            Add Todo
+          </Button>
+        </HStack>
+
+        {/* Filter Buttons */}
+        <HStack spacing={2}>
+          <Button
+            variant={filter === 'all' ? 'primary' : 'ghost'}
+            size="small"
+            onPress={() => onFilterChange('all')}
+          >
+            All ({todos.length})
+          </Button>
+          <Button
+            variant={filter === 'active' ? 'primary' : 'ghost'}
+            size="small"
+            onPress={() => onFilterChange('active')}
+          >
+            Active ({todos.filter(t => !t.completed).length})
+          </Button>
+          <Button
+            variant={filter === 'completed' ? 'primary' : 'ghost'}
+            size="small"
+            onPress={() => onFilterChange('completed')}
+          >
+            Done ({todos.filter(t => t.completed).length})
+          </Button>
+        </HStack>
+
+        {/* Todo List */}
+        <Stack spacing={2}>
+          {filteredTodos.length === 0 ? (
+            <Card p={4}>
+              <Text variant="body" color="gray.500" align="center">
+                {filter === 'all' ? 'No todos yet. Add one to get started!' :
+                 filter === 'active' ? 'No active todos. Great job!' :
+                 'No completed todos yet.'}
+              </Text>
+            </Card>
+          ) : (
+            filteredTodos.map(todo => (
+              <Card key={todo.id} p={3}>
+                <HStack align="center" spacing={3}>
+                  <Button
+                    variant={todo.completed ? 'primary' : 'ghost'}
+                    size="small"
+                    onPress={() => onToggleTodo(todo.id)}
+                  >
+                    {todo.completed ? '✓' : '○'}
+                  </Button>
+                  
+                  <Stack flex={1} spacing={1}>
+                    <Text 
+                      variant="body" 
+                      color={todo.completed ? 'gray.400' : 'gray.900'}
+                      onPress={() => onViewTodo(todo.id)}
+                    >
+                      {todo.title}
+                    </Text>
+                    {todo.description && (
+                      <Text variant="caption" color="gray.500">
+                        {todo.description.length > 50 
+                          ? todo.description.substring(0, 50) + '...'
+                          : todo.description
+                        }
+                      </Text>
+                    )}
+                  </Stack>
+                  
+                  <HStack spacing={1}>
+                    <Button
+                      variant="ghost"
+                      size="small"
+                      onPress={() => onViewTodo(todo.id)}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="small"
+                      onPress={() => onDeleteTodo(todo.id)}
+                    >
+                      Delete
+                    </Button>
+                  </HStack>
+                </HStack>
+              </Card>
+            ))
+          )}
+        </Stack>
+
+        {/* Stats Footer */}
+        {todos.length > 0 && (
+          <Card p={3}>
+            <Text variant="caption" color="gray.600" align="center">
+              {todos.filter(t => t.completed).length} of {todos.length} todos completed
+            </Text>
+          </Card>
+        )}
+      </Stack>
+    </Screen>
+  );
+}
