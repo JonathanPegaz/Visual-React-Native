@@ -19,6 +19,7 @@
     "node_modules",
     ".vscode-test",
     "dist",
+    "src/webview/**/*",
     "**/*.test.ts"
   ]
 }
