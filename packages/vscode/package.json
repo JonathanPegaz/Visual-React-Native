@@ -1,0 +1,145 @@
+{
+  "name": "visual-rn-editor",
+  "displayName": "Visual React Native Editor",
+  "description": "Visual editor for React Native with MVVM architecture",
+  "version": "0.1.0",
+  "publisher": "visual-rn",
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "react-native",
+    "visual-editor",
+    "mvvm",
+    "design-tools"
+  ],
+  "icon": "resources/icon.png",
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "workspaceContains:**/*.view.vrn"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "visual-rn.openEditor",
+        "title": "Open Visual Editor",
+        "category": "Visual RN"
+      },
+      {
+        "command": "visual-rn.createScreen",
+        "title": "Create New Screen",
+        "category": "Visual RN"
+      },
+      {
+        "command": "visual-rn.createComponent",
+        "title": "Create New Component",
+        "category": "Visual RN"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .vrn",
+          "command": "visual-rn.openEditor",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceExtname == .vrn",
+          "command": "visual-rn.openEditor",
+          "group": "navigation"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "vrn",
+        "aliases": ["Visual React Native", "vrn"],
+        "extensions": [".vrn"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "visual-rn.editor",
+        "displayName": "Visual RN Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.view.vrn"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "configuration": {
+      "title": "Visual React Native",
+      "properties": {
+        "visual-rn.defaultDevice": {
+          "type": "string",
+          "default": "iPhone 14",
+          "description": "Default device for preview"
+        },
+        "visual-rn.gridSize": {
+          "type": "number",
+          "default": 8,
+          "description": "Grid size for snap-to-grid"
+        },
+        "visual-rn.snapToGrid": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable snap to grid"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "build": "webpack --mode production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "lint": "eslint src --ext ts,tsx"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.84.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vscode/test-electron": "^2.3.0",
+    "css-loader": "^6.8.0",
+    "eslint": "^8.54.0",
+    "style-loader": "^3.3.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.3.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "dependencies": {
+    "@babel/generator": "^7.23.0",
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0",
+    "@babel/types": "^7.23.0",
+    "chokidar": "^3.5.0",
+    "express": "^4.18.0",
+    "recast": "^0.23.0",
+    "socket.io": "^4.6.0",
+    "ws": "^8.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visual-rn/visual-rn.git",
+    "directory": "packages/vscode"
+  }
+}
