@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, ViewStyle, TouchableOpacity } from 'react-native';
 import { BaseComponentProps, ComponentMetadata, VRNComponent, Shadow, Radius } from '../types';
 import { useTheme } from '../hooks/useTheme';

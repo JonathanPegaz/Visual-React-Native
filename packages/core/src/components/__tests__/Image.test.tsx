@@ -1,5 +1,6 @@
+import { View, Image as ImageComponent } from 'react-native';
 import { Image } from '../Image';
-import { customRender, View, Image as ImageComponent } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
 

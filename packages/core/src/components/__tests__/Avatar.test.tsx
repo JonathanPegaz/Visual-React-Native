@@ -1,5 +1,6 @@
+import { View, Image } from 'react-native';
 import { Avatar } from '../Avatar';
-import { customRender, View, Image } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
 

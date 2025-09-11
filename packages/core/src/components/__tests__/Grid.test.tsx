@@ -1,5 +1,6 @@
+import { View, Text } from 'react-native';
 import { Grid } from '../Grid';
-import { customRender, View, Text } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
 

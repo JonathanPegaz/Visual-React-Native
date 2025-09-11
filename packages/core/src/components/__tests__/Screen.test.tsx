@@ -1,6 +1,7 @@
-import { Platform } from 'react-native';
+import { Platform, View, Text, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Screen } from '../Screen';
-import { customRender, View, Text, SafeAreaView, ScrollView, KeyboardAvoidingView } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
 

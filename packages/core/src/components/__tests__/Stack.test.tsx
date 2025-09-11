@@ -1,5 +1,6 @@
+import { View, Text } from 'react-native';
 import { Stack } from '../Stack';
-import { customRender, View, Text } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 // Use custom render with theme provider
 const renderWithTheme = customRender;

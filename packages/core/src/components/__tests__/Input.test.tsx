@@ -1,6 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
+import { View } from 'react-native';
 import { Input } from '../Input';
-import { customRender, View } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 // Use custom render with theme provider
 const renderWithTheme = customRender;

@@ -1,5 +1,5 @@
 import { Text } from '../Text';
-import { customRender } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 // Use custom render with theme provider
 const renderWithTheme = customRender;
@@ -55,7 +55,7 @@ describe('Text', () => {
   });
 
   it('applies custom styles', () => {
-    const customStyle = { textDecoration: 'underline' };
+    const customStyle = { textDecorationLine: 'underline' as const };
     const { getByText } = renderWithTheme(
       <Text style={customStyle}>Custom Text</Text>
     );

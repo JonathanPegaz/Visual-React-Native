@@ -1,5 +1,6 @@
+import { View } from 'react-native';
 import { Divider } from '../Divider';
-import { customRender, View } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
 

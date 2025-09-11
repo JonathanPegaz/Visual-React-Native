@@ -1,6 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
+import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Button } from '../Button';
-import { customRender, ActivityIndicator, TouchableOpacity } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 // Use custom render with theme provider
 const renderWithTheme = customRender;

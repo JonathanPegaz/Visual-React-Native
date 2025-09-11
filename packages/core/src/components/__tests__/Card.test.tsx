@@ -1,6 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Card } from '../Card';
-import { customRender, View, Text, TouchableOpacity } from '../../__tests__/setup';
+import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
 
