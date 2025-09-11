@@ -1,6 +1,4 @@
 // Mock VSCode API for testing
-const jest = require('jest');
-
 export const workspace = {
   getConfiguration: jest.fn(() => ({
     get: jest.fn(),

@@ -12,7 +12,7 @@ module.exports = {
     '!src/test/**',
     '!src/webview/**', // Exclude webview components (require DOM)
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^vscode$': '<rootDir>/src/__mocks__/vscode',
   },
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
