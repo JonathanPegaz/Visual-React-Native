@@ -1,3 +1,11 @@
 {
-  "presets": ["module:@react-native/babel-preset"]
+  "presets": [
+    ["@babel/preset-env", { "modules": "commonjs" }],
+    ["@babel/preset-react", { "runtime": "automatic" }],
+    "@babel/preset-typescript",
+    ["@babel/preset-flow", { "all": true }]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-flow-strip-types"
+  ]
 }

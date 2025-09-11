@@ -1,60 +1,73 @@
-import '@testing-library/jest-native/extend-expect';
+/// <reference types="jest" />
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '../theme/ThemeProvider';
 
-jest.mock('react-native', () => ({
-  Platform: {
-    OS: 'ios' as const,
-    select: jest.fn((obj: Record<string, unknown>) => obj['ios'] || obj['default']),
-  },
-  StyleSheet: {
-    create: jest.fn((styles: Record<string, unknown>) => styles),
-    flatten: jest.fn((styles: Record<string, unknown>) => styles),
-  },
-  Dimensions: {
-    get: jest.fn(() => ({ width: 375, height: 812 })),
-  },
-  View: (props: any) => React.createElement('View', props, props.children),
-  Text: (props: any) => React.createElement('Text', props, props.children),
-  TouchableOpacity: (props: any) => React.createElement('TouchableOpacity', props, props.children),
-  TextInput: (props: any) => React.createElement('TextInput', props),
-  ScrollView: (props: any) => React.createElement('ScrollView', props, props.children),
-  Image: (props: any) => React.createElement('Image', props),
-  KeyboardAvoidingView: (props: any) => React.createElement('KeyboardAvoidingView', props, props.children),
-  ActivityIndicator: (props: any) => React.createElement('ActivityIndicator', props),
-}));
+// Mock React Native completely to avoid Flow import issues
+jest.mock('react-native', () => {
+  const React = require('react');
+  
+  const mockComponent = (name: string) => {
+    const Component = (props: any) => {
+      const { children, ...rest } = props;
+      return React.createElement('div', { 
+        ...rest, 
+        'data-testid': name.toLowerCase(),
+        className: name
+      }, children);
+    };
+    Component.displayName = name;
+    return Component;
+  };
 
-jest.mock('react-native-safe-area-context', () => ({
-  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
-  SafeAreaView: (props: any) => React.createElement('SafeAreaView', props, props.children),
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-
-// Suppress console warnings in tests
-const originalWarn = console.warn;
-const originalError = console.error;
-
-beforeAll(() => {
-  console.warn = jest.fn();
-  console.error = jest.fn();
+  return {
+    Platform: {
+      OS: 'ios',
+      select: (specifics: any) => specifics.ios || specifics.default,
+    },
+    StyleSheet: {
+      create: (identity: any) => identity,
+      flatten: (identity: any) => identity,
+    },
+    Dimensions: {
+      get: () => ({ width: 375, height: 812 }),
+    },
+    View: mockComponent('View'),
+    Text: mockComponent('Text'),
+    TouchableOpacity: mockComponent('TouchableOpacity'),
+    TextInput: mockComponent('TextInput'),
+    ScrollView: mockComponent('ScrollView'),
+    Image: mockComponent('Image'),
+    KeyboardAvoidingView: mockComponent('KeyboardAvoidingView'),
+    ActivityIndicator: mockComponent('ActivityIndicator'),
+  };
 });
 
-afterAll(() => {
-  console.warn = originalWarn;
-  console.error = originalError;
+// Mock React Native animated helper
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+
+// Mock SafeAreaContext
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  
+  return {
+    SafeAreaProvider: ({ children }: any) => children,
+    SafeAreaView: (props: any) => {
+      const { children, ...rest } = props;
+      return React.createElement('div', {
+        ...rest,
+        'data-testid': 'safeareaview',
+        className: 'SafeAreaView'
+      }, children);
+    },
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  };
 });
 
+// Cleanup
 afterEach(() => {
   jest.clearAllMocks();
 });
-
-// Import React Native components from mock for tests
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Re-export for tests
-export { View, Text, TouchableOpacity, TextInput, ScrollView, Image, KeyboardAvoidingView, ActivityIndicator, SafeAreaView };
 
 // Custom render utility
 export const customRender = (ui: React.ReactElement, options = {}) => {

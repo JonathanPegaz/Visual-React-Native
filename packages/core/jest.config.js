@@ -1,32 +1,27 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
+  preset: undefined,
+  testEnvironment: 'node',
+  setupFilesAfterEnv: [
+    '<rootDir>/src/test/setup.ts'
+  ],
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/__tests__/**/*.tsx', '**/?(*.)+(spec|test).ts', '**/?(*.)+(spec|test).tsx'],
+  testMatch: ['**/__tests__/**/*.tsx', '**/?(*.)+(spec|test).tsx'],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react-jsx',
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
-        types: ['jest', 'node'],
-      },
-    }],
+    '^.+\\.[jt]sx?$': 'babel-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|react-native-.*)/)',
+    'node_modules/(?!(@testing-library|react-native|@react-native|react-native-.*)/)',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
-    '!src/__tests__/**',
+    '!src/test/**',
     '!src/**/index.ts',
     '!src/types.ts',
   ],
