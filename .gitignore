@@ -83,3 +83,5 @@ docs/.vitepress/dist/
 
 # Instructions and development notes (private)
 instructions/
+
+repomix-output.xml

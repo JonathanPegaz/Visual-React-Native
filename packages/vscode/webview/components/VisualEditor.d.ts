@@ -6,6 +6,7 @@ declare global {
         visualRNEditor: any;
         filePath: string;
         serverPort: string;
+        authToken: string;
         pendingMessages: any[];
     }
 }

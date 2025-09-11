@@ -1,69 +1,21 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
+import type { 
+  VRNComponent, 
+  ComponentDefinition, 
+  VRNFileState, 
+  EditorState 
+} from './types';
 
-export interface VRNComponent {
-  id: string;
-  type: string;
-  props: Record<string, any>;
-  children?: VRNComponent[];
-  position?: { x: number; y: number };
-  size?: { width: number; height: number };
-}
-
-export interface ComponentDefinition {
-  name: string;
-  category: string;
-  icon: string;
-  props: Record<string, any>;
-  bindable?: Record<string, any>;
-}
-
-export interface VRNFileState {
-  filePath: string;
-  tree: VRNComponent | null;
-  bindings: Record<string, any>;
-  logicFile?: {
-    state: Record<string, any>;
-    actions: Record<string, any>;
-  };
-  lastModified: number;
-}
-
-export interface EditorState {
-  // Connection
-  socket: Socket | null;
-  isConnected: boolean;
-  serverPort: number | null;
-  
-  // File state
-  currentFile: VRNFileState | null;
-  
-  // Editor state
-  selectedComponentId: string | null;
-  availableComponents: ComponentDefinition[];
-  
-  // UI state
-  isLoading: boolean;
-  error: string | null;
-  
-  // Actions
-  connect: (port: number) => void;
-  disconnect: () => void;
-  loadFile: (filePath: string) => void;
-  updateComponent: (componentId: string, updates: Partial<VRNComponent>) => void;
-  addComponent: (component: VRNComponent, parentId?: string) => void;
-  removeComponent: (componentId: string) => void;
-  selectComponent: (componentId: string | null) => void;
-  saveFile: () => void;
-  setError: (error: string | null) => void;
-  setLoading: (loading: boolean) => void;
-}
+// Re-export types for other components
+export type { VRNComponent, ComponentDefinition, VRNFileState };
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   // Initial state
   socket: null,
   isConnected: false,
   serverPort: null,
+  authToken: null,
   currentFile: null,
   selectedComponentId: null,
   availableComponents: [],
@@ -71,17 +23,31 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   error: null,
 
   // Connection actions
-  connect: (port: number) => {
-    const socket = io(`http://localhost:${port}`);
+  connect: (port: number, authToken: string) => {
+    const socket = io(`http://localhost:${port}`, {
+      auth: {
+        token: authToken
+      }
+    });
     
     socket.on('connect', () => {
-      console.log('Connected to VRN Language Server');
-      set({ isConnected: true, serverPort: port });
+      console.log('Connected to VRN Language Server with authentication');
+      set({ isConnected: true, serverPort: port, authToken });
     });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from VRN Language Server');
+    socket.on('disconnect', (reason) => {
+      console.log('Disconnected from VRN Language Server:', reason);
       set({ isConnected: false });
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error.message);
+      set({ 
+        error: error.message.includes('Authentication') 
+          ? 'Authentication failed. Please restart the editor.'
+          : 'Failed to connect to language server.',
+        isLoading: false 
+      });
     });
 
     socket.on('project:loaded', (data) => {
@@ -138,7 +104,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const { socket } = get();
     if (socket) {
       socket.disconnect();
-      set({ socket: null, isConnected: false, serverPort: null });
+      set({ socket: null, isConnected: false, serverPort: null, authToken: null });
     }
   },
 

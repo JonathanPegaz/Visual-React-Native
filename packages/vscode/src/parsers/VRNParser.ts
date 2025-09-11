@@ -2,6 +2,12 @@ import * as babel from '@babel/parser';
 import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import * as t from '@babel/types';
+import { 
+  validateVRNComponent, 
+  validateVRNFile, 
+  VRNComponent,
+  VRNFile 
+} from '../schemas/VRNSchemas';
 
 export interface VRNNode {
   id: string;
@@ -292,6 +298,42 @@ export class VRNParser {
 
   private generateId(): string {
     return `node-${++this.nodeIdCounter}`;
+  }
+
+  /**
+   * Validate a VRN component tree using Zod schemas
+   */
+  validateComponent(component: unknown): { success: true; data: VRNComponent } | { success: false; errors: string[] } {
+    return validateVRNComponent(component);
+  }
+
+  /**
+   * Validate a complete VRN file structure
+   */
+  validateFile(file: unknown): { success: true; data: VRNFile } | { success: false; errors: string[] } {
+    return validateVRNFile(file);
+  }
+
+  /**
+   * Convert VRNNode to VRNComponent and validate
+   */
+  private validateAndConvertNode(node: VRNNode): VRNComponent | null {
+    const component: VRNComponent = {
+      id: node.id,
+      type: node.type as any, // Type will be validated by Zod
+      props: node.props,
+      children: node.children.map(child => this.validateAndConvertNode(child)).filter(Boolean) as VRNComponent[],
+      position: node.metadata ? { x: 0, y: 0 } : undefined,
+      size: undefined,
+    };
+
+    const validation = this.validateComponent(component);
+    if (!validation.success) {
+      console.warn(`Component validation failed for ${node.type}:`, validation.errors);
+      return null;
+    }
+
+    return validation.data;
   }
 
   private createEmptyNode(): VRNNode {

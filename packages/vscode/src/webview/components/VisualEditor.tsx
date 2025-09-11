@@ -20,10 +20,11 @@ export const VisualEditor: React.FC = () => {
   useEffect(() => {
     // Get initial data from window (set by extension)
     const serverPort = window.serverPort;
+    const authToken = window.authToken;
     const filePath = window.filePath;
 
-    if (serverPort && parseInt(serverPort)) {
-      connect(parseInt(serverPort));
+    if (serverPort && authToken && parseInt(serverPort)) {
+      connect(parseInt(serverPort), authToken);
     }
 
     // Connect to VSCode API
@@ -88,6 +89,7 @@ declare global {
     visualRNEditor: any;
     filePath: string;
     serverPort: string;
+    authToken: string;
     pendingMessages: any[];
   }
 }

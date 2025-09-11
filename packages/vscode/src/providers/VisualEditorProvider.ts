@@ -7,7 +7,8 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly getServerPort: () => number
+    private readonly getServerPort: () => number,
+    private readonly getAuthToken: () => string
   ) {}
 
   public async resolveCustomTextEditor(
@@ -92,6 +93,7 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
         // Replace template variables
         html = html.replace(/<%= htmlWebpackPlugin\.options\.filePath %>/g, document.uri.fsPath);
         html = html.replace(/<%= htmlWebpackPlugin\.options\.serverPort %>/g, this.getServerPort().toString());
+        html = html.replace(/<%= htmlWebpackPlugin\.options\.authToken %>/g, this.getAuthToken());
         
         // Update CSP and convert URIs
         const scriptMatches = html.match(/src="([^"]+\.js)"/g) || [];
@@ -156,6 +158,7 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
         window.vscode = acquireVsCodeApi();
         window.filePath = '${document.uri.fsPath}';
         window.serverPort = '${this.getServerPort()}';
+        window.authToken = '${this.getAuthToken()}';
         window.pendingMessages = [];
         
         // Handle messages from extension

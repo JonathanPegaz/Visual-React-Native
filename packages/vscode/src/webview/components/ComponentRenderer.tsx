@@ -1,5 +1,5 @@
 import React from 'react';
-import { VRNComponent, useEditorStore } from '../store';
+import { useEditorStore, type VRNComponent } from '../store';
 
 interface ComponentRendererProps {
   component: VRNComponent;
@@ -23,18 +23,36 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
     selectComponent(childId);
   };
 
+  // Safe props accessor with proper types
+  const componentProps = component.props || {};
+  
+  // Helper functions for type-safe prop access
+  const getProp = <T>(key: string, defaultValue: T): T => {
+    const value = componentProps[key];
+    return value !== undefined ? (value as T) : defaultValue;
+  };
+
+  const getStringProp = (key: string, defaultValue: string = ''): string => 
+    getProp(key, defaultValue);
+  
+  const getNumberProp = (key: string, defaultValue: number = 0): number => 
+    getProp(key, defaultValue);
+  
+  const getBooleanProp = (key: string, defaultValue: boolean = false): boolean => 
+    getProp(key, defaultValue);
+
   const renderComponent = () => {
     switch (component.type) {
       case 'Screen':
         return (
           <div 
-            className={`vrn-screen ${component.props['safe'] ? 'safe-area' : ''}`}
+            className={`vrn-screen ${getBooleanProp('safe') ? 'safe-area' : ''}`}
             style={{
-              backgroundColor: component.props['bg'] || 'transparent',
-              padding: component.props['p'] ? `${component.props['p'] * 4}px` : '0',
+              backgroundColor: getStringProp('bg', 'transparent'),
+              padding: getNumberProp('p') ? `${getNumberProp('p') * 4}px` : '0',
             }}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: VRNComponent) => (
               <ComponentRenderer
                 key={child.id}
                 component={child}
@@ -52,13 +70,13 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: component.props['spacing'] ? `${component.props['spacing'] * 4}px` : '0',
-              alignItems: component.props['align'] || 'stretch',
-              justifyContent: component.props['justify'] || 'flex-start',
-              padding: component.props['p'] ? `${component.props['p'] * 4}px` : '0',
+              gap: getNumberProp('spacing') ? `${getNumberProp('spacing') * 4}px` : '0',
+              alignItems: getStringProp('align', 'stretch'),
+              justifyContent: getStringProp('justify', 'flex-start'),
+              padding: getNumberProp('p') ? `${getNumberProp('p') * 4}px` : '0',
             }}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: VRNComponent) => (
               <ComponentRenderer
                 key={child.id}
                 component={child}
@@ -76,12 +94,33 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
             style={{
               display: 'flex',
               flexDirection: 'row',
-              gap: component.props['spacing'] ? `${component.props['spacing'] * 4}px` : '0',
-              alignItems: component.props['align'] || 'center',
-              justifyContent: component.props['justify'] || 'flex-start',
+              gap: getNumberProp('spacing') ? `${getNumberProp('spacing') * 4}px` : '0',
+              alignItems: getStringProp('align', 'center'),
+              justifyContent: getStringProp('justify', 'flex-start'),
             }}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: VRNComponent) => (
+              <ComponentRenderer
+                key={child.id}
+                component={child}
+                isSelected={selectedComponentId === child.id}
+                onSelect={() => handleChildSelect(child.id)}
+              />
+            ))}
+          </div>
+        );
+
+      case 'Grid':
+        return (
+          <div 
+            className="vrn-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${getNumberProp('cols', 2)}, 1fr)`,
+              gap: getNumberProp('gap') ? `${getNumberProp('gap') * 4}px` : '16px',
+            }}
+          >
+            {component.children?.map((child: VRNComponent) => (
               <ComponentRenderer
                 key={child.id}
                 component={child}
@@ -94,51 +133,111 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
 
       case 'Text':
         return (
-          <span 
-            className={`vrn-text ${component.props['variant'] || 'body'}`}
+          <span
             style={{
-              color: component.props['color'] || 'inherit',
-              textAlign: component.props['align'] || 'left',
+              fontSize: getStringProp('variant') === 'h1' ? '32px' :
+                       getStringProp('variant') === 'h2' ? '24px' :
+                       getStringProp('variant') === 'h3' ? '20px' :
+                       getStringProp('variant') === 'caption' ? '12px' : '16px',
+              fontWeight: getStringProp('weight', 'normal'),
+              color: getStringProp('color', '#000'),
+              textAlign: getStringProp('align', 'left') as any,
             }}
           >
-            {component.props['children'] || 'Text'}
+            {getStringProp('children', 'Text Content')}
           </span>
         );
 
       case 'Button':
         return (
-          <button 
-            className={`vrn-button ${component.props['variant'] || 'primary'} ${component.props['size'] || 'medium'}`}
+          <button
+            className={`vrn-button ${getStringProp('variant', 'primary')} ${getStringProp('size', 'md')}`}
             style={{
-              width: component.props['fullWidth'] ? '100%' : 'auto',
+              width: getBooleanProp('fullWidth') ? '100%' : 'auto',
+              opacity: getBooleanProp('disabled') ? 0.5 : 1,
+              cursor: getBooleanProp('disabled') ? 'not-allowed' : 'pointer',
             }}
-            disabled
+            disabled={getBooleanProp('disabled')}
           >
-            {component.props['children'] || 'Button'}
+            {getStringProp('children', 'Button')}
           </button>
         );
 
       case 'Input':
         return (
-          <input 
-            className="vrn-input"
-            type={component.props['type'] || 'text'}
-            placeholder={component.props['placeholder'] || 'Enter text...'}
-            value={component.props['value'] || ''}
-            disabled
-            readOnly
+          <input
+            className={`vrn-input ${getStringProp('variant', 'outline')} ${getStringProp('size', 'md')}`}
+            type={getStringProp('type', 'text') as any}
+            placeholder={getStringProp('placeholder', 'Enter text...')}
+            disabled={getBooleanProp('disabled')}
+            style={{
+              borderColor: getBooleanProp('error') ? '#e53e3e' : '#e2e8f0',
+            }}
           />
+        );
+
+      case 'Image':
+        return (
+          <img
+            src={getStringProp('source', 'https://via.placeholder.com/150')}
+            alt={getStringProp('alt', 'Image')}
+            style={{
+              width: '100%',
+              height: 'auto',
+              objectFit: getStringProp('fit', 'cover') as any,
+              borderRadius: getStringProp('rounded') === 'full' ? '50%' :
+                           getStringProp('rounded') === 'lg' ? '12px' :
+                           getStringProp('rounded') === 'md' ? '8px' :
+                           getStringProp('rounded') === 'sm' ? '4px' : '0',
+            }}
+          />
+        );
+
+      case 'Avatar':
+        return (
+          <div
+            className={`vrn-avatar ${getStringProp('size', 'md')}`}
+            style={{
+              width: getStringProp('size') === 'xs' ? '24px' :
+                     getStringProp('size') === 'sm' ? '32px' :
+                     getStringProp('size') === 'lg' ? '64px' :
+                     getStringProp('size') === 'xl' ? '96px' : '48px',
+              height: getStringProp('size') === 'xs' ? '24px' :
+                      getStringProp('size') === 'sm' ? '32px' :
+                      getStringProp('size') === 'lg' ? '64px' :
+                      getStringProp('size') === 'xl' ? '96px' : '48px',
+              borderRadius: getStringProp('shape') === 'square' ? '8px' : '50%',
+              backgroundColor: getStringProp('source') ? 'transparent' : '#e2e8f0',
+              backgroundImage: getStringProp('source') ? `url(${getStringProp('source')})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: getStringProp('size') === 'xs' ? '10px' :
+                        getStringProp('size') === 'sm' ? '12px' :
+                        getStringProp('size') === 'lg' ? '24px' :
+                        getStringProp('size') === 'xl' ? '32px' : '16px',
+            }}
+          >
+            {!getStringProp('source') && getStringProp('fallback', 'U')}
+          </div>
         );
 
       case 'Card':
         return (
-          <div 
-            className="vrn-card"
+          <div
+            className={`vrn-card ${getStringProp('shadow', 'md')}`}
             style={{
-              padding: component.props['p'] ? `${component.props['p'] * 4}px` : '16px',
+              padding: getNumberProp('p') ? `${getNumberProp('p') * 4}px` : '16px',
+              borderRadius: getStringProp('rounded') === 'none' ? '0' :
+                           getStringProp('rounded') === 'sm' ? '4px' :
+                           getStringProp('rounded') === 'lg' ? '12px' :
+                           getStringProp('rounded') === 'xl' ? '16px' : '8px',
+              border: getBooleanProp('border') ? '1px solid #e2e8f0' : 'none',
             }}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: VRNComponent) => (
               <ComponentRenderer
                 key={child.id}
                 component={child}
@@ -149,45 +248,32 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
           </div>
         );
 
-      case 'Avatar':
-        return (
-          <div 
-            className={`vrn-avatar ${component.props['size'] || 'medium'}`}
-            style={{
-              backgroundImage: component.props['src'] ? `url(${component.props['src']})` : undefined,
-            }}
-          >
-            {!component.props['src'] && (component.props['name']?.[0] || '👤')}
-          </div>
-        );
-
-      case 'Image':
-        return (
-          <div 
-            className="vrn-image"
-            style={{
-              aspectRatio: component.props['aspectRatio'] || '16/9',
-              backgroundImage: component.props['src'] ? `url(${component.props['src']})` : undefined,
-            }}
-          >
-            {!component.props['src'] && '🖼️'}
-          </div>
-        );
-
       case 'Divider':
         return (
-          <hr 
-            className="vrn-divider"
+          <div
+            className={`vrn-divider ${getStringProp('orientation', 'horizontal')}`}
             style={{
-              margin: component.props['spacing'] ? `${component.props['spacing'] * 4}px 0` : '8px 0',
+              width: getStringProp('orientation') === 'vertical' ? `${getNumberProp('thickness', 1)}px` : '100%',
+              height: getStringProp('orientation') === 'vertical' ? '100%' : `${getNumberProp('thickness', 1)}px`,
+              backgroundColor: getStringProp('color', '#e2e8f0'),
+              margin: getNumberProp('spacing') ? `${getNumberProp('spacing') * 4}px 0` : '8px 0',
             }}
           />
         );
 
       default:
         return (
-          <div className="vrn-unknown">
-            <span>Unknown: {component.type}</span>
+          <div
+            className="vrn-component-unknown"
+            style={{
+              padding: '8px',
+              border: '2px dashed #ccc',
+              borderRadius: '4px',
+              color: '#666',
+              fontSize: '12px',
+            }}
+          >
+            Unknown component: {component.type}
           </div>
         );
     }
@@ -195,25 +281,20 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
 
   return (
     <div
-      className={`component-wrapper ${isSelected ? 'selected' : ''}`}
+      className={`vrn-component-wrapper ${isSelected ? 'selected' : ''}`}
       onClick={handleClick}
-      data-component-id={component.id}
-      data-component-type={component.type}
+      style={{
+        position: 'relative',
+        outline: isSelected ? '2px solid #007acc' : 'none',
+        outlineOffset: '2px',
+      }}
     >
       {renderComponent()}
-      {isSelected && (
-        <div className="selection-overlay">
-          <div className="selection-handles">
-            <div className="handle top-left"></div>
-            <div className="handle top-right"></div>
-            <div className="handle bottom-left"></div>
-            <div className="handle bottom-right"></div>
-          </div>
-          <div className="component-label">
-            {component.type}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+
+// Helper function to generate unique IDs
+function generateId(): string {
+  return `vrn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}

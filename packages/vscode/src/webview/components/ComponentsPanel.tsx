@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEditorStore, ComponentDefinition } from '../store';
+import { useEditorStore, type ComponentDefinition, type VRNComponent } from '../store';
 
 export const ComponentsPanel: React.FC = () => {
   const { availableComponents, addComponent } = useEditorStore();
@@ -13,9 +13,9 @@ export const ComponentsPanel: React.FC = () => {
   }, {} as Record<string, ComponentDefinition[]>) || {};
 
   const handleAddComponent = (componentDef: ComponentDefinition) => {
-    const newComponent = {
+    const newComponent: VRNComponent = {
       id: generateId(),
-      type: componentDef.name,
+      type: componentDef.name as VRNComponent['type'],
       props: { ...componentDef.props },
       children: [],
     };
@@ -62,5 +62,5 @@ export const ComponentsPanel: React.FC = () => {
 };
 
 function generateId(): string {
-  return Math.random().toString(36).substr(2, 9);
+  return `vrn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }

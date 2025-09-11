@@ -34,12 +34,13 @@ export interface EditorState {
     socket: Socket | null;
     isConnected: boolean;
     serverPort: number | null;
+    authToken: string | null;
     currentFile: VRNFileState | null;
     selectedComponentId: string | null;
     availableComponents: ComponentDefinition[];
     isLoading: boolean;
     error: string | null;
-    connect: (port: number) => void;
+    connect: (port: number, authToken: string) => void;
     disconnect: () => void;
     loadFile: (filePath: string) => void;
     updateComponent: (componentId: string, updates: Partial<VRNComponent>) => void;

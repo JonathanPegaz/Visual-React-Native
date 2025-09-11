@@ -3,8 +3,10 @@ import * as http from 'http';
 import { Server as SocketServer } from 'socket.io';
 import * as path from 'path';
 import * as fs from 'fs';
+import { randomBytes } from 'crypto';
 import { VRNParser, ParsedVRNFile } from '../parsers/VRNParser';
 import { LogicAnalyzer, ParsedLogicFile } from '../parsers/LogicAnalyzer';
+import { validateComponentProps } from '../schemas/VRNSchemas';
 
 export interface VRNServerMessage {
   type: string;
@@ -26,6 +28,8 @@ export class VRNLanguageServer {
   private logicAnalyzer = new LogicAnalyzer();
   private fileStates: Map<string, VRNFileState> = new Map();
   private isRunning = false;
+  private authToken: string = '';
+  private connectedClients: Set<string> = new Set();
 
   constructor(context: vscode.ExtensionContext) {
     // Context stored for potential future use
@@ -38,11 +42,15 @@ export class VRNLanguageServer {
     }
 
     return new Promise((resolve, reject) => {
+      // Generate secure authentication token
+      this.authToken = randomBytes(32).toString('hex');
+      
       this.server = http.createServer();
       this.io = new SocketServer(this.server, {
         cors: {
-          origin: "*",
-          methods: ["GET", "POST"]
+          origin: 'vscode-webview://*',
+          methods: ['GET', 'POST'],
+          credentials: true
         }
       });
 
@@ -69,8 +77,45 @@ export class VRNLanguageServer {
   private setupSocketHandlers(): void {
     if (!this.io) return;
 
+    // Authentication middleware
+    this.io.use((socket, next) => {
+      const token = socket.handshake.auth['token'];
+      if (token === this.authToken) {
+        this.connectedClients.add(socket.id);
+        next();
+      } else {
+        console.error('Socket.IO: Authentication failed', { 
+          providedToken: token ? 'present' : 'missing',
+          socketId: socket.id 
+        });
+        next(new Error('Authentication failed'));
+      }
+    });
+
+    // Rate limiting middleware
+    const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+    const RATE_LIMIT = 100; // requests per minute
+    const RATE_WINDOW = 60 * 1000; // 1 minute
+
+    this.io.use((socket, next) => {
+      const now = Date.now();
+      const clientId = socket.id;
+      const clientLimit = rateLimitMap.get(clientId);
+
+      if (!clientLimit || now > clientLimit.resetTime) {
+        rateLimitMap.set(clientId, { count: 1, resetTime: now + RATE_WINDOW });
+        next();
+      } else if (clientLimit.count < RATE_LIMIT) {
+        clientLimit.count++;
+        next();
+      } else {
+        console.warn('Socket.IO: Rate limit exceeded', { socketId: clientId });
+        next(new Error('Rate limit exceeded'));
+      }
+    });
+
     this.io.on('connection', (socket) => {
-      console.log('Visual editor connected');
+      console.log('Visual editor connected and authenticated', { socketId: socket.id });
 
       // Send initial project state
       socket.emit('project:loaded', {
@@ -132,8 +177,10 @@ export class VRNLanguageServer {
         }
       });
 
-      socket.on('disconnect', () => {
-        console.log('Visual editor disconnected');
+      socket.on('disconnect', (reason) => {
+        console.log('Visual editor disconnected', { socketId: socket.id, reason });
+        this.connectedClients.delete(socket.id);
+        rateLimitMap.delete(socket.id);
       });
     });
   }
@@ -147,6 +194,20 @@ export class VRNLanguageServer {
 
     const content = fs.readFileSync(absolutePath, 'utf-8');
     const vrnFile = this.parser.parse(content);
+
+    // Validate the parsed VRN file
+    const validation = this.parser.validateFile({
+      tree: vrnFile.tree,
+      bindings: vrnFile.bindings,
+      raw: content,
+      imports: vrnFile.imports,
+      exports: vrnFile.exports,
+    });
+
+    if (!validation.success) {
+      console.warn(`VRN file validation warnings for ${filePath}:`, validation.errors);
+      // Continue processing but log warnings
+    }
 
     // Find corresponding logic file
     const logicFilePath = this.logicAnalyzer.findCorrespondingLogicFile(absolutePath);
@@ -176,8 +237,30 @@ export class VRNLanguageServer {
       throw new Error(`File not loaded: ${filePath}`);
     }
 
+    // Validate updates if they contain props
+    if (updates.props && updates.type) {
+      const propsValidation = validateComponentProps(updates.type, updates.props);
+      if (!propsValidation.success) {
+        throw new Error(`Invalid props for ${updates.type}: ${propsValidation.errors.join(', ')}`);
+      }
+    }
+
     // Update the tree
     const updatedTree = this.parser.updateNode(state.vrnFile.tree, nodeId, updates);
+    
+    // Validate the updated component
+    const componentValidation = this.parser.validateComponent({
+      id: nodeId,
+      type: updates.type || state.vrnFile.tree.type,
+      props: updates.props || {},
+      children: [],
+    });
+
+    if (!componentValidation.success) {
+      console.warn(`Component validation failed during update:`, componentValidation.errors);
+      // Continue but log warning
+    }
+
     state.vrnFile.tree = updatedTree;
     state.lastModified = Date.now();
 
@@ -320,7 +403,15 @@ export class VRNLanguageServer {
     return this.port;
   }
 
+  getAuthToken(): string {
+    return this.authToken;
+  }
+
   isServerRunning(): boolean {
     return this.isRunning;
+  }
+
+  getConnectedClientsCount(): number {
+    return this.connectedClients.size;
   }
 }
