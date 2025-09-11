@@ -5,7 +5,7 @@ export async function createComponent(): Promise<void> {
   // Get component name from user
   const componentName = await vscode.window.showInputBox({
     prompt: 'Enter component name (e.g., CustomCard, UserAvatar)',
-    placeholder: 'ComponentName',
+    placeHolder: 'ComponentName',
     validateInput: (value: string) => {
       if (!value || value.trim().length === 0) {
         return 'Component name is required';
@@ -43,12 +43,12 @@ export async function createComponent(): Promise<void> {
 
   // Get current workspace folder
   const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (!workspaceFolders) {
+  if (!workspaceFolders || workspaceFolders.length === 0) {
     vscode.window.showErrorMessage('No workspace folder open');
     return;
   }
 
-  const workspaceRoot = workspaceFolders[0].uri.fsPath;
+  const workspaceRoot = workspaceFolders[0]!.uri.fsPath;
 
   // Ask for output directory
   const outputDir = await vscode.window.showInputBox({
@@ -93,6 +93,6 @@ export async function createComponent(): Promise<void> {
     }, 2000);
 
   } catch (error) {
-    vscode.window.showErrorMessage(`Failed to create component: ${error.message}`);
+    vscode.window.showErrorMessage(`Failed to create component: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

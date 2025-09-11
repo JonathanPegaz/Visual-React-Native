@@ -40,7 +40,7 @@ export class LogicAnalyzer {
       const content = fs.readFileSync(filePath, 'utf-8');
       return this.parseLogicContent(content, filePath);
     } catch (error) {
-      throw new Error(`Failed to analyze logic file ${filePath}: ${error.message}`);
+      throw new Error(`Failed to analyze logic file ${filePath}: ${error instanceof Error ? error.message : 'Parse error'}`);
     }
   }
 
@@ -109,7 +109,7 @@ export class LogicAnalyzer {
         if (t.isIdentifier(path.node.callee) && path.node.callee.name === 'useState') {
           const parent = path.parent;
           if (t.isVariableDeclarator(parent) && t.isArrayPattern(parent.id)) {
-            const [stateVar, setStateVar] = parent.id.elements;
+            const [stateVar, ] = parent.id.elements;
             if (t.isIdentifier(stateVar)) {
               const stateName = stateVar.name;
               stateVariables.add(stateName);
@@ -249,7 +249,7 @@ export class LogicAnalyzer {
       } else if (comment.type === 'CommentBlock') {
         return comment.value
           .split('\n')
-          .map(line => line.replace(/^\s*\*?\s?/, ''))
+          .map((line: string) => line.replace(/^\s*\*?\s?/, ''))
           .join(' ')
           .trim();
       }

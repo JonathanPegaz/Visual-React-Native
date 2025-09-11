@@ -236,7 +236,7 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
       terminal.sendText(`visual-rn create ${componentType} ${name}`);
       terminal.show();
     } catch (error) {
-      vscode.window.showErrorMessage(`Failed to create ${componentType}: ${error.message}`);
+      vscode.window.showErrorMessage(`Failed to create ${componentType}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

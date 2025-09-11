@@ -27,7 +27,10 @@ export class VRNLanguageServer {
   private fileStates: Map<string, VRNFileState> = new Map();
   private isRunning = false;
 
-  constructor(private context: vscode.ExtensionContext) {}
+  constructor(context: vscode.ExtensionContext) {
+    // Context stored for potential future use
+    void context;
+  }
 
   async start(): Promise<number> {
     if (this.isRunning) {
@@ -86,7 +89,7 @@ export class VRNLanguageServer {
         } catch (error) {
           socket.emit('error:parse', {
             filePath,
-            message: error.message,
+            message: error instanceof Error ? error.message : 'Parse error',
           });
         }
       });
@@ -112,7 +115,7 @@ export class VRNLanguageServer {
         } catch (error) {
           socket.emit('error:update', {
             filePath: data.filePath,
-            message: error.message,
+            message: error instanceof Error ? error.message : 'Update error',
           });
         }
       });
@@ -124,7 +127,7 @@ export class VRNLanguageServer {
         } catch (error) {
           socket.emit('error:save', {
             filePath,
-            message: error.message,
+            message: error instanceof Error ? error.message : 'Save error',
           });
         }
       });
@@ -153,7 +156,7 @@ export class VRNLanguageServer {
       try {
         logicFile = await this.logicAnalyzer.analyzeFile(logicFilePath);
       } catch (error) {
-        console.warn(`Failed to analyze logic file ${logicFilePath}:`, error.message);
+        console.warn(`Failed to analyze logic file ${logicFilePath}:`, error instanceof Error ? error.message : 'Analysis error');
       }
     }
 
@@ -233,7 +236,7 @@ export class VRNLanguageServer {
           console.error(`Failed to reload logic file ${logicFilePath}:`, error);
           this.broadcastMessage('error:logic', {
             logicFilePath,
-            message: error.message,
+            message: error instanceof Error ? error.message : 'Logic reload error',
           });
         });
     }
@@ -250,7 +253,7 @@ export class VRNLanguageServer {
       console.error(`Failed to reload file ${filePath}:`, error);
       this.broadcastMessage('error:reload', {
         filePath,
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Reload error',
       });
     }
   }

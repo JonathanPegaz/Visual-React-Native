@@ -8,7 +8,7 @@ export const ComponentsPanel: React.FC = () => {
     if (!acc[component.category]) {
       acc[component.category] = [];
     }
-    acc[component.category].push(component);
+    acc[component.category]?.push(component);
     return acc;
   }, {} as Record<string, ComponentDefinition[]>) || {};
 

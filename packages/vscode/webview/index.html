@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src ws: wss:;"><title>Visual RN Editor</title><script defer="defer" src="index.js"></script></head><body><div id="root"></div><script>// Pass data from extension to webview
+        window.vscode = acquireVsCodeApi();
+        window.filePath = '';
+        window.serverPort = '';
+        window.pendingMessages = [];
+        
+        // Listen for messages from extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (window.visualRNEditor) {
+                window.visualRNEditor.handleMessage(message);
+            } else {
+                window.pendingMessages.push(message);
+            }
+        });</script></body></html>

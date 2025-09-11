@@ -96,7 +96,7 @@ export class VRNParser {
         ast,
       };
     } catch (error) {
-      throw new Error(`Failed to parse VRN file: ${error.message}`);
+      throw new Error(`Failed to parse VRN file: ${error instanceof Error ? error.message : 'Parse error'}`);
     }
   }
 
@@ -119,7 +119,7 @@ export class VRNParser {
     }
 
     if (t.isReturnStatement(node)) {
-      return this.traverseJSXElement(node.argument);
+      return this.traverseJSXElement(node.argument || null);
     }
 
     if (t.isJSXElement(node)) {
@@ -170,17 +170,20 @@ export class VRNParser {
     };
   }
 
-  private getElementName(name: t.JSXElementName): string {
+  private getElementName(name: t.JSXIdentifier | t.JSXMemberExpression | t.JSXNamespacedName): string {
     if (t.isJSXIdentifier(name)) {
       return name.name;
     }
     if (t.isJSXMemberExpression(name)) {
       return `${this.getElementName(name.object)}.${name.property.name}`;
     }
+    if (t.isJSXNamespacedName(name)) {
+      return `${name.namespace.name}:${name.name.name}`;
+    }
     return 'Unknown';
   }
 
-  private parseProps(attributes: t.JSXAttribute[] | t.JSXSpreadAttribute[]): Record<string, any> {
+  private parseProps(attributes: (t.JSXAttribute | t.JSXSpreadAttribute)[]): Record<string, any> {
     const props: Record<string, any> = {};
 
     for (const attr of attributes) {
@@ -222,7 +225,7 @@ export class VRNParser {
     const state: string[] = [];
     const actions: string[] = [];
 
-    for (const [key, value] of Object.entries(props)) {
+    for (const [, value] of Object.entries(props)) {
       if (typeof value === 'string') {
         if (value.startsWith('state.')) {
           state.push(value);
@@ -280,7 +283,7 @@ export class VRNParser {
 
     for (const statement of body.body) {
       if (t.isReturnStatement(statement)) {
-        return statement.argument;
+        return statement.argument || null;
       }
     }
 

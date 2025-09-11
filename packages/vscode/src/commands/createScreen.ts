@@ -5,7 +5,7 @@ export async function createScreen(): Promise<void> {
   // Get screen name from user
   const screenName = await vscode.window.showInputBox({
     prompt: 'Enter screen name (e.g., Login, Profile, Settings)',
-    placeholder: 'ScreenName',
+    placeHolder: 'ScreenName',
     validateInput: (value: string) => {
       if (!value || value.trim().length === 0) {
         return 'Screen name is required';
@@ -23,12 +23,12 @@ export async function createScreen(): Promise<void> {
 
   // Get current workspace folder
   const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (!workspaceFolders) {
+  if (!workspaceFolders || workspaceFolders.length === 0) {
     vscode.window.showErrorMessage('No workspace folder open');
     return;
   }
 
-  const workspaceRoot = workspaceFolders[0].uri.fsPath;
+  const workspaceRoot = workspaceFolders[0]!.uri.fsPath;
 
   // Ask for output directory
   const outputDir = await vscode.window.showInputBox({
@@ -83,6 +83,6 @@ export async function createScreen(): Promise<void> {
     }, 2000);
 
   } catch (error) {
-    vscode.window.showErrorMessage(`Failed to create screen: ${error.message}`);
+    vscode.window.showErrorMessage(`Failed to create screen: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

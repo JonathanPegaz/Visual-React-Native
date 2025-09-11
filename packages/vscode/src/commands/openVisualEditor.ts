@@ -26,6 +26,6 @@ export async function openVisualEditor(): Promise<void> {
       VisualEditorProvider.viewType
     );
   } catch (error) {
-    vscode.window.showErrorMessage(`Failed to open Visual Editor: ${error.message}`);
+    vscode.window.showErrorMessage(`Failed to open Visual Editor: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
