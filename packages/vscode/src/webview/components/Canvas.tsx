@@ -2,11 +2,16 @@ import React from 'react';
 import { useEditorStore } from '../store';
 import { ComponentRenderer } from './ComponentRenderer';
 
+function generateId(): string {
+  return `vrn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export const Canvas: React.FC = () => {
   const { 
     currentFile, 
     selectedComponentId, 
     selectComponent,
+    addComponent,
     isConnected 
   } = useEditorStore();
 
@@ -63,6 +68,34 @@ export const Canvas: React.FC = () => {
           // Deselect when clicking on empty canvas
           if (e.target === e.currentTarget) {
             selectComponent(null);
+          }
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          const data = e.dataTransfer.getData('application/json');
+          if (data) {
+            try {
+              const dropData = JSON.parse(data);
+              if (dropData.type === 'component' && dropData.componentDefinition) {
+                const componentDef = dropData.componentDefinition;
+                const newComponent = {
+                  id: generateId(),
+                  type: componentDef.name as any,
+                  props: { ...componentDef.props },
+                  children: [],
+                };
+                // Add to root if no tree exists, otherwise don't add (will be handled by ComponentRenderer)
+                if (!currentFile?.tree) {
+                  addComponent(newComponent);
+                }
+              }
+            } catch (error) {
+              console.error('Failed to parse drop data:', error);
+            }
           }
         }}
       >

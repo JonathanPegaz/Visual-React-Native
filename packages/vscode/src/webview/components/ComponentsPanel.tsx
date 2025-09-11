@@ -46,8 +46,16 @@ export const ComponentsPanel: React.FC = () => {
                 <div
                   key={component.name}
                   className="component-item"
+                  draggable
                   onClick={() => handleAddComponent(component)}
-                  title={`Add ${component.name}`}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('application/json', JSON.stringify({
+                      type: 'component',
+                      componentDefinition: component
+                    }));
+                    e.dataTransfer.effectAllowed = 'copy';
+                  }}
+                  title={`Drag to add ${component.name} or click to add to root`}
                 >
                   <span className="component-icon">{component.icon}</span>
                   <span className="component-name">{component.name}</span>

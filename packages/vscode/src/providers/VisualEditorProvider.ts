@@ -119,10 +119,35 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
           }
         });
         
-        // Update CSP
+        // Update CSP - Remove unsafe-inline and unsafe-eval
+        const nonce = this.getNonce();
         html = html.replace(
           /content="[^"]*"/,
-          `content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval'; connect-src ws: wss: http: https:;"`
+          `content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource} 'nonce-${nonce}'; connect-src ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*; img-src ${webview.cspSource} data: https:;"`
+        );
+        
+        // Add nonce to inline scripts
+        html = html.replace(/<script>/g, `<script nonce="${nonce}">`);
+        html = html.replace(/<script ([^>]*?)>/g, `<script nonce="${nonce}" $1>`);
+        
+        // Replace inline script variables with data attributes
+        html = html.replace(
+          /window\.filePath\s*=\s*['"][^'"]*['"]/g,
+          ''
+        );
+        html = html.replace(
+          /window\.serverPort\s*=\s*['"][^'"]*['"]/g,
+          ''
+        );
+        html = html.replace(
+          /window\.authToken\s*=\s*['"][^'"]*['"]/g,
+          ''
+        );
+        
+        // Add data attributes to body
+        html = html.replace(
+          /<body([^>]*)>/,
+          `<body$1 data-file-path="${this.escapeHtml(document.uri.fsPath)}" data-server-port="${this.getServerPort()}" data-auth-token="${this.escapeHtml(this.getAuthToken())}">`
         );
         
         return html;
@@ -143,22 +168,50 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' 'unsafe-eval'; connect-src ws: wss:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource} 'nonce-${nonce}'; connect-src ws://localhost:* wss://localhost:* http://localhost:* https://localhost:*; img-src ${webview.cspSource} data: https:;">
     <title>Visual RN Editor</title>
+    <style>
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 16px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #333;
+            border-top: 3px solid #007acc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            color: #888;
+        }
+    </style>
 </head>
-<body>
+<body data-file-path="${this.escapeHtml(document.uri.fsPath)}" data-server-port="${this.getServerPort()}" data-auth-token="${this.escapeHtml(this.getAuthToken())}">
     <div id="root">
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 16px; font-family: 'Segoe UI', sans-serif;">
-            <div style="width: 32px; height: 32px; border: 3px solid #333; border-top: 3px solid #007acc; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <p style="color: #888;">Loading Visual Editor...</p>
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p class="loading-text">Loading Visual Editor...</p>
         </div>
     </div>
 
     <script nonce="${nonce}">
         window.vscode = acquireVsCodeApi();
-        window.filePath = '${document.uri.fsPath}';
-        window.serverPort = '${this.getServerPort()}';
-        window.authToken = '${this.getAuthToken()}';
+        // Get data from body attributes instead of inline variables
+        const body = document.body;
+        window.filePath = body.getAttribute('data-file-path');
+        window.serverPort = body.getAttribute('data-server-port');
+        window.authToken = body.getAttribute('data-auth-token');
         window.pendingMessages = [];
         
         // Handle messages from extension
@@ -170,11 +223,6 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
                 window.pendingMessages.push(message);
             }
         });
-
-        // Add spinner animation
-        const style = document.createElement('style');
-        style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
-        document.head.appendChild(style);
     </script>
     
     <script nonce="${nonce}" src="${scriptUri}"></script>
@@ -250,5 +298,14 @@ export class VisualEditorProvider implements vscode.CustomTextEditorProvider {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

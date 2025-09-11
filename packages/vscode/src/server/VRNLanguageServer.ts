@@ -7,6 +7,7 @@ import { randomBytes } from 'crypto';
 import { VRNParser, ParsedVRNFile } from '../parsers/VRNParser';
 import { LogicAnalyzer, ParsedLogicFile } from '../parsers/LogicAnalyzer';
 import { validateComponentProps } from '../schemas/VRNSchemas';
+import { VRN_COMPONENT_DEFINITIONS, getComponentDefinition } from '../schemas/ComponentDefinitions';
 
 export interface VRNServerMessage {
   type: string;
@@ -243,6 +244,16 @@ export class VRNLanguageServer {
       if (!propsValidation.success) {
         throw new Error(`Invalid props for ${updates.type}: ${propsValidation.errors.join(', ')}`);
       }
+
+      // Additional validation using centralized component definitions
+      const componentDef = getComponentDefinition(updates.type);
+      if (componentDef) {
+        for (const [propName] of Object.entries(updates.props)) {
+          if (!componentDef.props[propName]) {
+            console.warn(`Unknown prop '${propName}' for component '${updates.type}'`);
+          }
+        }
+      }
     }
 
     // Update the tree
@@ -264,8 +275,8 @@ export class VRNLanguageServer {
     state.vrnFile.tree = updatedTree;
     state.lastModified = Date.now();
 
-    // Regenerate the code
-    const newCode = this.parser.serialize(updatedTree, state.vrnFile.bindings);
+    // Regenerate the code using AST-based generation
+    const newCode = this.parser.serializeAST(updatedTree, state.vrnFile.bindings);
     state.vrnFile.raw = newCode;
   }
 
@@ -348,40 +359,8 @@ export class VRNLanguageServer {
   }
 
   private getAvailableComponents(): any[] {
-    // Return list of available Visual RN components
-    return [
-      {
-        name: 'Screen',
-        category: 'Layout',
-        props: ['safe', 'scroll', 'bg', 'p'],
-      },
-      {
-        name: 'Stack',
-        category: 'Layout',
-        props: ['spacing', 'align', 'justify', 'p'],
-      },
-      {
-        name: 'HStack',
-        category: 'Layout',
-        props: ['spacing', 'align', 'justify'],
-      },
-      {
-        name: 'Text',
-        category: 'Typography',
-        props: ['variant', 'color', 'align'],
-      },
-      {
-        name: 'Button',
-        category: 'Inputs',
-        props: ['variant', 'size', 'fullWidth', 'onPress'],
-      },
-      {
-        name: 'Input',
-        category: 'Inputs',
-        props: ['type', 'placeholder', 'value', 'onChangeText'],
-      },
-      // Add more components...
-    ];
+    // Return centralized component definitions
+    return VRN_COMPONENT_DEFINITIONS;
   }
 
   stop(): void {

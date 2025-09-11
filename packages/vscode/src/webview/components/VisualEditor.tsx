@@ -18,10 +18,18 @@ export const VisualEditor: React.FC = () => {
   } = useEditorStore();
 
   useEffect(() => {
-    // Get initial data from window (set by extension)
-    const serverPort = window.serverPort;
-    const authToken = window.authToken;
-    const filePath = window.filePath;
+    // Get initial data from window (set by extension) or body data attributes
+    let serverPort = window.serverPort;
+    let authToken = window.authToken;
+    let filePath = window.filePath;
+
+    // Fallback to data attributes if window variables are not set (for security)
+    if (!serverPort || !authToken || !filePath) {
+      const body = document.body;
+      serverPort = serverPort || body.getAttribute('data-server-port');
+      authToken = authToken || body.getAttribute('data-auth-token');
+      filePath = filePath || body.getAttribute('data-file-path');
+    }
 
     if (serverPort && authToken && parseInt(serverPort)) {
       connect(parseInt(serverPort), authToken);

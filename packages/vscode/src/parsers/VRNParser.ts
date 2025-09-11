@@ -8,6 +8,7 @@ import {
   VRNComponent,
   VRNFile 
 } from '../schemas/VRNSchemas';
+import { ASTGenerator } from './ASTGenerator';
 
 export interface VRNNode {
   id: string;
@@ -49,6 +50,7 @@ export interface ParsedVRNFile {
 
 export class VRNParser {
   private nodeIdCounter = 0;
+  private astGenerator = new ASTGenerator();
 
   parse(content: string): ParsedVRNFile {
     try {
@@ -370,6 +372,11 @@ export class VRNParser {
     const component = this.generateComponent(tree, bindingsComment);
 
     return `${imports}\n\n${component}`;
+  }
+
+  // New AST-based serialization method
+  serializeAST(tree: VRNNode, bindings: VRNBindings): string {
+    return this.astGenerator.generateProgram(tree, bindings);
   }
 
   private generateImports(): string {

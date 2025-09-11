@@ -12,7 +12,7 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   isSelected,
   onSelect,
 }) => {
-  const { selectedComponentId, selectComponent } = useEditorStore();
+  const { selectedComponentId, selectComponent, addComponent } = useEditorStore();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -279,14 +279,52 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const data = e.dataTransfer.getData('application/json');
+    if (data) {
+      try {
+        const dropData = JSON.parse(data);
+        if (dropData.type === 'component' && dropData.componentDefinition) {
+          const componentDef = dropData.componentDefinition;
+          const newComponent = {
+            id: generateId(),
+            type: componentDef.name as any,
+            props: { ...componentDef.props },
+            children: [],
+          };
+          // Add as child to this component
+          addComponent(newComponent, component.id);
+        }
+      } catch (error) {
+        console.error('Failed to parse drop data:', error);
+      }
+    }
+  };
+
+  // Check if this component can accept children
+  const canAcceptChildren = !['Text', 'Button', 'Input', 'Image', 'Avatar', 'Divider'].includes(component.type);
+
   return (
     <div
       className={`vrn-component-wrapper ${isSelected ? 'selected' : ''}`}
       onClick={handleClick}
+      onDragOver={canAcceptChildren ? handleDragOver : undefined}
+      onDrop={canAcceptChildren ? handleDrop : undefined}
       style={{
         position: 'relative',
         outline: isSelected ? '2px solid #007acc' : 'none',
         outlineOffset: '2px',
+        minHeight: canAcceptChildren && component.children?.length === 0 ? '40px' : 'auto',
+        border: canAcceptChildren && component.children?.length === 0 ? '2px dashed #ccc' : 'none',
       }}
     >
       {renderComponent()}
