@@ -1,4 +1,4 @@
-import React from 'react';
+import { Children } from 'react';
 import { View, ViewStyle } from 'react-native';
 import { BaseComponentProps, ComponentMetadata, VRNComponent, Spacing } from '../types';
 import { useTheme } from '../hooks/useTheme';
@@ -34,7 +34,7 @@ export const Grid: VRNComponent<GridProps> = ({
     ...(style as ViewStyle),
   };
 
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = Children.toArray(children);
 
   return (
     <View style={containerStyle}>

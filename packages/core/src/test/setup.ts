@@ -1,68 +1,38 @@
 /// <reference types="jest" />
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { ThemeProvider } from '../theme/ThemeProvider';
 
-// Mock React Native completely to avoid Flow import issues
-jest.mock('react-native', () => {
-  const React = require('react');
-  
-  const mockComponent = (name: string) => {
-    const Component = (props: any) => {
-      const { children, ...rest } = props;
-      return React.createElement('div', { 
-        ...rest, 
-        'data-testid': name.toLowerCase(),
-        className: name
-      }, children);
-    };
-    Component.displayName = name;
-    return Component;
-  };
-
-  return {
-    Platform: {
-      OS: 'ios',
-      select: (specifics: any) => specifics.ios || specifics.default,
-    },
-    StyleSheet: {
-      create: (identity: any) => identity,
-      flatten: (identity: any) => identity,
-    },
-    Dimensions: {
-      get: () => ({ width: 375, height: 812 }),
-    },
-    View: mockComponent('View'),
-    Text: mockComponent('Text'),
-    TouchableOpacity: mockComponent('TouchableOpacity'),
-    TextInput: mockComponent('TextInput'),
-    ScrollView: mockComponent('ScrollView'),
-    Image: mockComponent('Image'),
-    KeyboardAvoidingView: mockComponent('KeyboardAvoidingView'),
-    ActivityIndicator: mockComponent('ActivityIndicator'),
-  };
-});
-
-// Mock React Native animated helper
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Mock React Native completely with DOM elements
+jest.mock('react-native', () => ({
+  Platform: {
+    OS: 'web',
+    select: (specifics: any) => specifics.web || specifics.default,
+  },
+  StyleSheet: {
+    create: (styles: any) => styles,
+    flatten: (style: any) => style,
+  },
+  Dimensions: {
+    get: () => ({ width: 375, height: 812 }),
+  },
+  View: 'div',
+  Text: 'span',
+  TouchableOpacity: 'button',
+  TextInput: 'input',
+  ScrollView: 'div',
+  Image: 'img',
+  KeyboardAvoidingView: 'div',
+  ActivityIndicator: 'div',
+}));
 
 // Mock SafeAreaContext
-jest.mock('react-native-safe-area-context', () => {
-  const React = require('react');
-  
-  return {
-    SafeAreaProvider: ({ children }: any) => children,
-    SafeAreaView: (props: any) => {
-      const { children, ...rest } = props;
-      return React.createElement('div', {
-        ...rest,
-        'data-testid': 'safeareaview',
-        className: 'SafeAreaView'
-      }, children);
-    },
-    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-  };
-});
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaProvider: ({ children }: any) => children,
+  SafeAreaView: 'div',
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
 
 // Cleanup
 afterEach(() => {

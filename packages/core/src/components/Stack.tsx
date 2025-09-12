@@ -1,4 +1,4 @@
-import React from 'react';
+import { Children, Fragment } from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
 import { BaseComponentProps, ComponentMetadata, VRNComponent, Spacing } from '../types';
 import { useTheme } from '../hooks/useTheme';
@@ -34,12 +34,12 @@ export const Stack: VRNComponent<StackProps> = ({
 
   const spacingValue = tokens.spacing[spacing] || 0;
 
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = Children.toArray(children);
   
   return (
     <View style={containerStyle}>
       {childrenArray.map((child, index) => (
-        <React.Fragment key={index}>
+        <Fragment key={index}>
           {index > 0 && spacing > 0 && (
             <View style={{ height: spacingValue }} />
           )}
@@ -47,7 +47,7 @@ export const Stack: VRNComponent<StackProps> = ({
             <View style={[styles.divider, { backgroundColor: getColor('border') }]} />
           )}
           {child}
-        </React.Fragment>
+        </Fragment>
       ))}
     </View>
   );

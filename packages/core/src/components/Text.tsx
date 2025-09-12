@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text as RNText, TextStyle } from 'react-native';
 import { BaseComponentProps, ComponentMetadata, VRNComponent, TextVariant } from '../types';
 import { useTheme } from '../hooks/useTheme';
