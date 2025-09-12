@@ -19,12 +19,10 @@ describe('Text', () => {
     );
     
     const element = getByText('Heading');
-    const styles = element.props.style;
+    const styles = getComputedStyle(element);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      fontSize: 32,
-      fontWeight: 'bold',
-    }));
+    expect(styles.fontSize).toBe('32px');
+    expect(styles.fontWeight).toBe('bold');
   });
 
   it('applies color prop', () => {
@@ -33,11 +31,9 @@ describe('Text', () => {
     );
     
     const element = getByText('Error message');
-    const styles = element.props.style;
+    const styles = getComputedStyle(element);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      color: expect.any(String),
-    }));
+    expect(styles.color).toBeTruthy();
   });
 
   it('applies utility props', () => {
@@ -46,24 +42,21 @@ describe('Text', () => {
     );
     
     const element = getByText('Spaced Text');
-    const styles = element.props.style;
+    const styles = getComputedStyle(element);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      margin: 16,
-      padding: 8,
-    }));
+    expect(styles.margin).toBe('16px');
+    expect(styles.padding).toBe('8px');
   });
 
   it('applies custom styles', () => {
-    const customStyle = { textDecorationLine: 'underline' as const };
     const { getByText } = renderWithTheme(
-      <Text style={customStyle}>Custom Text</Text>
+      <Text style={{ textDecorationLine: 'underline' }}>Custom Text</Text>
     );
     
     const element = getByText('Custom Text');
-    const styles = element.props.style;
+    const styles = getComputedStyle(element);
     
-    expect(styles).toMatchObject(expect.objectContaining(customStyle));
+    expect(styles.textDecorationLine).toBe('underline');
   });
 
   it('contains correct VRN metadata', () => {
@@ -110,11 +103,9 @@ describe('Text', () => {
     );
     
     const element = getByText('Centered Text');
-    const styles = element.props.style;
+    const styles = getComputedStyle(element);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      textAlign: 'center',
-    }));
+    expect(styles.textAlign).toBe('center');
   });
 
   it('handles numberOfLines prop', () => {
@@ -123,6 +114,9 @@ describe('Text', () => {
     );
     
     const element = getByText('This is a very long text that should be truncated');
-    expect(element.props.numberOfLines).toBe(1);
+    const styles = getComputedStyle(element);
+    
+    // numberOfLines in web typically translates to CSS line-clamp or similar
+    expect(styles.webkitLineClamp || element.style.webkitLineClamp).toBeTruthy();
   });
 });

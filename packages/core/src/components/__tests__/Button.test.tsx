@@ -1,5 +1,5 @@
-import { fireEvent } from '@testing-library/react-native';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { fireEvent } from '@testing-library/react';
+// React Native components (ActivityIndicator, TouchableOpacity) are rendered as DOM elements
 import { Button } from '../Button';
 import { customRender } from '../../test/setup';
 
@@ -21,7 +21,7 @@ describe('Button', () => {
       <Button onPress={mockOnPress}>Click me</Button>
     );
     
-    fireEvent.press(getByText('Click me'));
+    fireEvent.click(getByText('Click me'));
     expect(mockOnPress).toHaveBeenCalledTimes(1);
   });
 
@@ -30,12 +30,10 @@ describe('Button', () => {
       <Button variant="secondary" onPress={() => {}}>Secondary</Button>
     );
     
-    const element = getByText('Secondary').parent;
-    const styles = element?.props.style;
+    const element = getByText('Secondary').parentElement;
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      backgroundColor: expect.any(String),
-    }));
+    expect(styles.backgroundColor).toBeTruthy();
   });
 
   it('applies size prop', () => {
@@ -43,21 +41,22 @@ describe('Button', () => {
       <Button size="lg" onPress={() => {}}>Large</Button>
     );
     
-    const element = getByText('Large').parent;
-    const styles = element?.props.style;
+    const element = getByText('Large').parentElement;
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      paddingHorizontal: 24,
-      paddingVertical: 16,
-    }));
+    expect(styles.paddingLeft).toBe('24px');
+    expect(styles.paddingRight).toBe('24px');
+    expect(styles.paddingTop).toBe('16px');
+    expect(styles.paddingBottom).toBe('16px');
   });
 
   it('shows loading state', () => {
-    const { queryByText, UNSAFE_getByType } = renderWithTheme(
+    const { queryByText, container } = renderWithTheme(
       <Button onPress={() => {}} loading={true}>Submit</Button>
     );
     
-    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
+    // Look for loading indicator (rendered as a div or span with appropriate role/class)
+    expect(container.querySelector('[role="status"], .spinner, .loading')).toBeTruthy();
     expect(queryByText('Submit')).toBeNull();
   });
 
@@ -67,23 +66,23 @@ describe('Button', () => {
       <Button onPress={mockOnPress} disabled={true}>Disabled</Button>
     );
     
-    const button = getByText('Disabled').parent;
-    expect(button?.props.disabled).toBe(true);
+    const button = getByText('Disabled').closest('button') || getByText('Disabled').parentElement;
+    expect(button).toHaveAttribute('disabled');
     
-    fireEvent.press(button);
+    fireEvent.click(button!);
     expect(mockOnPress).not.toHaveBeenCalled();
   });
 
   it('is disabled when loading', () => {
     const mockOnPress = jest.fn();
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Button onPress={mockOnPress} loading={true}>Loading</Button>
     );
     
-    const button = UNSAFE_getByType(TouchableOpacity);
-    expect(button.props.disabled).toBe(true);
+    const button = container.querySelector('button') || container.querySelector('div[role="button"]');
+    expect(button).toHaveAttribute('disabled');
     
-    fireEvent.press(button);
+    fireEvent.click(button!);
     expect(mockOnPress).not.toHaveBeenCalled();
   });
 
@@ -92,12 +91,10 @@ describe('Button', () => {
       <Button onPress={() => {}} m={4}>Spaced</Button>
     );
     
-    const element = getByText('Spaced').parent;
-    const styles = element?.props.style;
+    const element = getByText('Spaced').parentElement;
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      margin: 16,
-    }));
+    expect(styles.margin).toBe('16px');
   });
 
   it('applies fullWidth prop', () => {
@@ -105,12 +102,10 @@ describe('Button', () => {
       <Button onPress={() => {}} fullWidth={true}>Full Width</Button>
     );
     
-    const element = getByText('Full Width').parent;
-    const styles = element?.props.style;
+    const element = getByText('Full Width').parentElement;
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      width: '100%',
-    }));
+    expect(styles.width).toBe('100%');
   });
 
   it('contains correct VRN metadata', () => {

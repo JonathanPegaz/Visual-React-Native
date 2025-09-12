@@ -1,4 +1,4 @@
-import { View, Image as ImageComponent } from 'react-native';
+// React Native components (View, Image) are rendered as div and img in DOM
 import { Image } from '../Image';
 import { customRender } from '../../test/setup';
 
@@ -6,143 +6,125 @@ const renderWithTheme = customRender;
 
 describe('Image', () => {
   it('renders correctly with URI source', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source={{ uri: 'https://example.com/image.jpg' }} />
     );
     
-    expect(UNSAFE_getByType(ImageComponent)).toBeTruthy();
+    expect(container.querySelector('img')).toBeTruthy();
   });
 
   it('renders correctly with string source', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" />
     );
     
-    expect(UNSAFE_getByType(ImageComponent)).toBeTruthy();
+    expect(container.querySelector('img')).toBeTruthy();
   });
 
   it('applies correct image source for URI', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source={{ uri: 'https://example.com/image.jpg' }} />
     );
     
-    const image = UNSAFE_getByType(ImageComponent);
-    expect(image.props.source).toEqual({ uri: 'https://example.com/image.jpg' });
+    const image = container.querySelector('img');
+    expect(image?.getAttribute('src')).toBe('https://example.com/image.jpg');
   });
 
   it('applies correct image source for string URL', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" />
     );
     
-    const image = UNSAFE_getByType(ImageComponent);
-    expect(image.props.source).toEqual({ uri: 'https://example.com/image.jpg' });
+    const image = container.querySelector('img');
+    expect(image?.getAttribute('src')).toBe('https://example.com/image.jpg');
   });
 
   it('applies default resize mode (cover)', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" />
     );
     
-    const image = UNSAFE_getByType(ImageComponent);
-    const styles = image.props.style;
+    const image = container.querySelector('img');
+    const styles = getComputedStyle(image!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      resizeMode: 'cover',
-    }));
+    expect(styles.objectFit).toBe('cover');
   });
 
   it('applies custom resize mode', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" fit="contain" />
     );
     
-    const image = UNSAFE_getByType(ImageComponent);
-    const styles = image.props.style;
+    const image = container.querySelector('img');
+    const styles = getComputedStyle(image!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      resizeMode: 'contain',
-    }));
+    expect(styles.objectFit).toBe('contain');
   });
 
   it('applies aspect ratio', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" ratio="16:9" />
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const imageContainer = container.querySelector('div');
+    const styles = getComputedStyle(imageContainer!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      aspectRatio: 16 / 9,
-    }));
+    expect(styles.aspectRatio).toBe('1.7777777777777777');
   });
 
   it('applies border radius', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" rounded="lg" />
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const imageContainer = container.querySelector('div');
+    const styles = getComputedStyle(imageContainer!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      borderRadius: expect.any(Number),
-      overflow: 'hidden',
-    }));
+    expect(parseInt(styles.borderRadius.replace('px', ''))).toBeGreaterThan(0);
+    expect(styles.overflow).toBe('hidden');
   });
 
   it('applies accessibility props when alt is provided', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" alt="A beautiful landscape" />
     );
     
-    const image = UNSAFE_getByType(ImageComponent);
-    expect(image.props.accessible).toBe(true);
-    expect(image.props.accessibilityLabel).toBe('A beautiful landscape');
+    const image = container.querySelector('img');
+    expect(image?.getAttribute('alt')).toBe('A beautiful landscape');
   });
 
   it('applies utility props to container', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" m={4} p={2} />
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const imageContainer = container.querySelector('div');
+    const styles = getComputedStyle(imageContainer!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      margin: 16,
-      padding: 8,
-    }));
+    expect(styles.margin).toBe('16px');
+    expect(styles.padding).toBe('8px');
   });
 
   it('applies square aspect ratio correctly', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" ratio="1:1" />
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const imageContainer = container.querySelector('div');
+    const styles = getComputedStyle(imageContainer!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      aspectRatio: 1,
-    }));
+    expect(styles.aspectRatio).toBe('1');
   });
 
   it('handles invalid aspect ratio gracefully', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Image source="https://example.com/image.jpg" ratio="invalid" />
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const imageContainer = container.querySelector('div');
+    const styles = getComputedStyle(imageContainer!);
     
-    expect(styles.aspectRatio).toBeUndefined();
+    expect(styles.aspectRatio).toBe('auto');
   });
 
   it('contains correct VRN metadata', () => {

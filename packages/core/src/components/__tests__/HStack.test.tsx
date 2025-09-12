@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+// React Native components (View, Text) are rendered as div and span in DOM
 import { HStack } from '../HStack';
 import { customRender } from '../../test/setup';
 
@@ -8,8 +8,8 @@ describe('HStack', () => {
   it('renders children correctly', () => {
     const { getByText } = renderWithTheme(
       <HStack>
-        <Text>Item 1</Text>
-        <Text>Item 2</Text>
+        <span>Item 1</span>
+        <span>Item 2</span>
       </HStack>
     );
     
@@ -18,144 +18,123 @@ describe('HStack', () => {
   });
 
   it('applies horizontal direction by default', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack>
-        <Text>Item</Text>
+        <span>Item</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      flexDirection: 'row',
-    }));
+    expect(styles.flexDirection).toBe('row');
   });
 
   it('applies center alignment by default', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack>
-        <Text>Item</Text>
+        <span>Item</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      alignItems: 'center',
-    }));
+    expect(styles.alignItems).toBe('center');
   });
 
   it('applies custom alignment', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack align="flex-end" justify="space-between">
-        <Text>Item</Text>
+        <span>Item</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      alignItems: 'flex-end',
-      justifyContent: 'space-between',
-    }));
+    expect(styles.alignItems).toBe('flex-end');
+    expect(styles.justifyContent).toBe('space-between');
   });
 
   it('applies wrap when enabled', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack wrap={true}>
-        <Text>Item 1</Text>
-        <Text>Item 2</Text>
+        <span>Item 1</span>
+        <span>Item 2</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      flexWrap: 'wrap',
-    }));
+    expect(styles.flexWrap).toBe('wrap');
   });
 
   it('applies nowrap by default', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack>
-        <Text>Item</Text>
+        <span>Item</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      flexWrap: 'nowrap',
-    }));
+    expect(styles.flexWrap).toBe('nowrap');
   });
 
   it('applies spacing between children', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack spacing={3}>
-        <Text>Item 1</Text>
-        <Text>Item 2</Text>
+        <span>Item 1</span>
+        <span>Item 2</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    // Should have container + spacer views
-    expect(views.length).toBeGreaterThan(1);
+    const divs = container.querySelectorAll('div');
+    // Should have container + spacer divs
+    expect(divs.length).toBeGreaterThan(1);
   });
 
   it('applies background color', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack bg="primary">
-        <Text>Item</Text>
+        <span>Item</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      backgroundColor: expect.any(String),
-    }));
+    expect(styles.backgroundColor).toBeTruthy();
   });
 
   it('applies utility props', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack p={4} m={2}>
-        <Text>Item</Text>
+        <span>Item</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    const container = views[0];
-    const styles = container.props.style;
+    const hstack = container.querySelector('div');
+    const styles = getComputedStyle(hstack!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      padding: 16,
-      margin: 8,
-    }));
+    expect(styles.padding).toBe('16px');
+    expect(styles.margin).toBe('8px');
   });
 
   it('renders children without spacing when spacing is 0', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <HStack spacing={0}>
-        <Text>Item 1</Text>
-        <Text>Item 2</Text>
+        <span>Item 1</span>
+        <span>Item 2</span>
       </HStack>
     );
     
-    const views = UNSAFE_getAllByType(View);
-    // Should only have the main container, no spacer views
-    expect(views.length).toBe(1);
+    const divs = container.querySelectorAll('div');
+    // Should only have the main container, no spacer divs
+    expect(divs.length).toBe(1);
   });
 
   it('contains correct VRN metadata', () => {

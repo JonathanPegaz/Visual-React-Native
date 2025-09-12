@@ -1,5 +1,5 @@
-import { fireEvent } from '@testing-library/react-native';
-import { View } from 'react-native';
+import { fireEvent } from '@testing-library/react';
+// React Native components (View) are rendered as div in DOM
 import { Input } from '../Input';
 import { customRender } from '../../test/setup';
 
@@ -30,7 +30,7 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Test input');
-    fireEvent.changeText(input, 'Hello');
+    fireEvent.change(input, { target: { value: 'Hello' } });
     
     expect(mockOnChange).toHaveBeenCalledWith('Hello');
   });
@@ -43,11 +43,9 @@ describe('Input', () => {
     expect(getByText('This field is required')).toBeTruthy();
     
     const input = getByPlaceholderText('Test');
-    const styles = input.props.style;
+    const styles = getComputedStyle(input);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      borderColor: expect.any(String),
-    }));
+    expect(styles.borderColor).toBeTruthy();
   });
 
   it('applies different input types', () => {
@@ -56,7 +54,7 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Password');
-    expect(input.props.secureTextEntry).toBe(true);
+    expect(input.getAttribute('type')).toBe('password');
   });
 
   it('applies email keyboard type', () => {
@@ -65,7 +63,7 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Email');
-    expect(input.props.keyboardType).toBe('email-address');
+    expect(input.getAttribute('type')).toBe('email');
   });
 
   it('applies numeric keyboard type', () => {
@@ -74,7 +72,7 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Number');
-    expect(input.props.keyboardType).toBe('numeric');
+    expect(input.getAttribute('type')).toBe('number');
   });
 
   it('handles editable prop', () => {
@@ -83,7 +81,7 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Disabled');
-    expect(input.props.editable).toBe(false);
+    expect(input.hasAttribute('disabled')).toBe(true);
   });
 
   it('applies size styles', () => {
@@ -92,12 +90,12 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Large input');
-    const styles = input.props.style;
+    const styles = getComputedStyle(input);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-    }));
+    expect(styles.paddingLeft).toBe('20px');
+    expect(styles.paddingRight).toBe('20px');
+    expect(styles.paddingTop).toBe('16px');
+    expect(styles.paddingBottom).toBe('16px');
   });
 
   it('applies variant styles', () => {
@@ -106,24 +104,20 @@ describe('Input', () => {
     );
     
     const input = getByPlaceholderText('Filled input');
-    const styles = input.props.style;
+    const styles = getComputedStyle(input);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      backgroundColor: expect.any(String),
-    }));
+    expect(styles.backgroundColor).toBeTruthy();
   });
 
   it('applies utility props', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Input placeholder="Spaced" m={4} />
     );
     
-    const container = UNSAFE_getByType(View);
-    const styles = container.props.style;
+    const inputContainer = container.querySelector('div');
+    const styles = getComputedStyle(inputContainer!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      margin: 16,
-    }));
+    expect(styles.margin).toBe('16px');
   });
 
   it('contains correct VRN metadata', () => {

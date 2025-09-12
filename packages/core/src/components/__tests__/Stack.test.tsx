@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+// React Native components (View, Text) are rendered as div and span in DOM
 import { Stack } from '../Stack';
 import { customRender } from '../../test/setup';
 
@@ -9,8 +9,8 @@ describe('Stack', () => {
   it('renders children correctly', () => {
     const { getByText } = renderWithTheme(
       <Stack>
-        <Text>Child 1</Text>
-        <Text>Child 2</Text>
+        <span>Child 1</span>
+        <span>Child 2</span>
       </Stack>
     );
     
@@ -19,91 +19,83 @@ describe('Stack', () => {
   });
 
   it('applies vertical direction by default', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Stack>
-        <Text>Child</Text>
+        <span>Child</span>
       </Stack>
     );
     
-    const element = UNSAFE_getByType(View);
-    const styles = element.props.style;
+    const element = container.querySelector('div');
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      flexDirection: 'column',
-    }));
+    expect(styles.flexDirection).toBe('column');
   });
 
   it('applies spacing between children', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Stack spacing={4}>
-        <Text>Child 1</Text>
-        <Text>Child 2</Text>
+        <span>Child 1</span>
+        <span>Child 2</span>
       </Stack>
     );
     
-    // Should have spacer views between children
-    const views = UNSAFE_getAllByType(View);
-    expect(views.length).toBeGreaterThan(2); // Container + spacer views
+    // Should have spacer divs between children
+    const divs = container.querySelectorAll('div');
+    expect(divs.length).toBeGreaterThan(2); // Container + spacer divs
   });
 
   it('applies alignment props', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Stack align="center" justify="space-between">
-        <Text>Child</Text>
+        <span>Child</span>
       </Stack>
     );
     
-    const element = UNSAFE_getByType(View);
-    const styles = element.props.style;
+    const element = container.querySelector('div');
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }));
+    expect(styles.alignItems).toBe('center');
+    expect(styles.justifyContent).toBe('space-between');
   });
 
   it('applies utility props', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Stack p={6} m={2}>
-        <Text>Child</Text>
+        <span>Child</span>
       </Stack>
     );
     
-    const element = UNSAFE_getByType(View);
-    const styles = element.props.style;
+    const element = container.querySelector('div');
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      padding: 24,
-      margin: 8,
-    }));
+    expect(styles.padding).toBe('24px');
+    expect(styles.margin).toBe('8px');
   });
 
   it('applies background color', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Stack bg="primary">
-        <Text>Child</Text>
+        <span>Child</span>
       </Stack>
     );
     
-    const element = UNSAFE_getByType(View);
-    const styles = element.props.style;
+    const element = container.querySelector('div');
+    const styles = getComputedStyle(element!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      backgroundColor: expect.any(String),
-    }));
+    expect(styles.backgroundColor).toBeTruthy();
   });
 
   it('renders dividers when enabled', () => {
-    const { UNSAFE_getAllByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Stack dividers={true}>
-        <Text>Child 1</Text>
-        <Text>Child 2</Text>
+        <span>Child 1</span>
+        <span>Child 2</span>
       </Stack>
     );
     
-    // Should have extra views for dividers
-    const views = UNSAFE_getAllByType(View);
-    expect(views.length).toBeGreaterThan(2); // Container + divider views
+    // Should have extra divs for dividers
+    const divs = container.querySelectorAll('div');
+    expect(divs.length).toBeGreaterThan(2); // Container + divider divs
   });
 
   it('contains correct VRN metadata', () => {

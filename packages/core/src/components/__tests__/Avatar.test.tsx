@@ -1,4 +1,4 @@
-import { View, Image } from 'react-native';
+// React Native components (View, Image) are rendered as div and img in DOM
 import { Avatar } from '../Avatar';
 import { customRender } from '../../test/setup';
 
@@ -6,8 +6,8 @@ const renderWithTheme = customRender;
 
 describe('Avatar', () => {
   it('renders with default props', () => {
-    const { UNSAFE_getByType } = renderWithTheme(<Avatar />);
-    expect(UNSAFE_getByType(View)).toBeTruthy();
+    const { container } = renderWithTheme(<Avatar />);
+    expect(container.querySelector('div')).toBeTruthy();
   });
 
   it('renders fallback text', () => {
@@ -18,88 +18,79 @@ describe('Avatar', () => {
   });
 
   it('applies size styles correctly', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar size="lg" />
     );
     
-    const container = UNSAFE_getByType(View);
-    const styles = container.props.style;
+    const avatarElement = container.querySelector('div');
+    const styles = getComputedStyle(avatarElement!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      width: 64,
-      height: 64,
-    }));
+    expect(styles.width).toBe('64px');
+    expect(styles.height).toBe('64px');
   });
 
   it('applies circle shape by default', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar size="md" />
     );
     
-    const container = UNSAFE_getByType(View);
-    const styles = container.props.style;
+    const avatarElement = container.querySelector('div');
+    const styles = getComputedStyle(avatarElement!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      borderRadius: 24, // half of 48px width for circle
-    }));
+    expect(styles.borderRadius).toBe('24px'); // half of 48px width for circle
   });
 
   it('applies square shape', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar shape="square" />
     );
     
-    const container = UNSAFE_getByType(View);
-    const styles = container.props.style;
+    const avatarElement = container.querySelector('div');
+    const styles = getComputedStyle(avatarElement!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      borderRadius: expect.any(Number),
-    }));
+    const borderRadiusValue = parseInt(styles.borderRadius.replace('px', ''));
+    expect(borderRadiusValue).toBeGreaterThan(0);
     // Square should have smaller border radius than circle
-    expect(styles.borderRadius).toBeLessThan(24);
+    expect(borderRadiusValue).toBeLessThan(24);
   });
 
   it('applies border styles', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar borderWidth={2} borderColor="primary" />
     );
     
-    const container = UNSAFE_getByType(View);
-    const styles = container.props.style;
+    const avatarElement = container.querySelector('div');
+    const styles = getComputedStyle(avatarElement!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      borderWidth: 2,
-      borderColor: expect.any(String),
-    }));
+    expect(styles.borderWidth).toBe('2px');
+    expect(styles.borderColor).toBeTruthy();
   });
 
   it('renders image with URI source', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar source={{ uri: 'https://example.com/avatar.jpg' }} />
     );
     
-    expect(UNSAFE_getByType(Image)).toBeTruthy();
+    expect(container.querySelector('img')).toBeTruthy();
   });
 
   it('renders image with string URL', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar source="https://example.com/avatar.jpg" />
     );
     
-    expect(UNSAFE_getByType(Image)).toBeTruthy();
+    expect(container.querySelector('img')).toBeTruthy();
   });
 
   it('applies utility props', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Avatar m={4} />
     );
     
-    const container = UNSAFE_getByType(View);
-    const styles = container.props.style;
+    const avatarElement = container.querySelector('div');
+    const styles = getComputedStyle(avatarElement!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      margin: 16,
-    }));
+    expect(styles.margin).toBe('16px');
   });
 
   it('contains correct VRN metadata', () => {

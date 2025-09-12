@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+// React Native components (View) are rendered as div in DOM
 import { Divider } from '../Divider';
 import { customRender } from '../../test/setup';
 
@@ -6,112 +6,98 @@ const renderWithTheme = customRender;
 
 describe('Divider', () => {
   it('renders correctly', () => {
-    const { UNSAFE_getByType } = renderWithTheme(<Divider />);
-    expect(UNSAFE_getByType(View)).toBeTruthy();
+    const { container } = renderWithTheme(<Divider />);
+    expect(container.querySelector('div')).toBeTruthy();
   });
 
   it('applies horizontal orientation by default', () => {
-    const { UNSAFE_getByType } = renderWithTheme(<Divider />);
+    const { container } = renderWithTheme(<Divider />);
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      height: 1,
-      width: '100%',
-    }));
+    expect(styles.height).toBe('1px');
+    expect(styles.width).toBe('100%');
   });
 
   it('applies vertical orientation', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider orientation="vertical" />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      width: 1,
-      height: '100%',
-    }));
+    expect(styles.width).toBe('1px');
+    expect(styles.height).toBe('100%');
   });
 
   it('applies custom thickness', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider thickness={3} />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      height: 3,
-    }));
+    expect(styles.height).toBe('3px');
   });
 
   it('applies custom length', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider length={200} />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      width: 200,
-    }));
+    expect(styles.width).toBe('200px');
   });
 
   it('applies custom color', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider color="primary" />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      backgroundColor: expect.any(String),
-    }));
+    expect(styles.backgroundColor).toBeTruthy();
   });
 
   it('applies spacing for horizontal divider', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider spacing={4} />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      marginVertical: 16,
-    }));
+    expect(styles.marginTop).toBe('16px');
+    expect(styles.marginBottom).toBe('16px');
   });
 
   it('applies spacing for vertical divider', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider orientation="vertical" spacing={2} />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      marginHorizontal: 8,
-    }));
+    expect(styles.marginLeft).toBe('8px');
+    expect(styles.marginRight).toBe('8px');
   });
 
   it('applies utility props', () => {
-    const { UNSAFE_getByType } = renderWithTheme(
+    const { container } = renderWithTheme(
       <Divider m={3} />
     );
     
-    const divider = UNSAFE_getByType(View);
-    const styles = divider.props.style;
+    const divider = container.querySelector('div');
+    const styles = getComputedStyle(divider!);
     
-    expect(styles).toMatchObject(expect.objectContaining({
-      margin: 12,
-    }));
+    expect(styles.margin).toBe('12px');
   });
 
   it('contains correct VRN metadata', () => {
