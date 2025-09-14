@@ -26,9 +26,9 @@ export const VisualEditor: React.FC = () => {
     // Fallback to data attributes if window variables are not set (for security)
     if (!serverPort || !authToken || !filePath) {
       const body = document.body;
-      serverPort = serverPort || body.getAttribute('data-server-port');
-      authToken = authToken || body.getAttribute('data-auth-token');
-      filePath = filePath || body.getAttribute('data-file-path');
+      serverPort = serverPort || body.getAttribute('data-server-port') || '';
+      authToken = authToken || body.getAttribute('data-auth-token') || '';
+      filePath = filePath || body.getAttribute('data-file-path') || '';
     }
 
     if (serverPort && authToken && parseInt(serverPort)) {

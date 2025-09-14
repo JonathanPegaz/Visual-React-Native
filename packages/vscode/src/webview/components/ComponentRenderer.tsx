@@ -27,7 +27,7 @@ export const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   const componentProps = component.props || {};
   
   // Helper functions for type-safe prop access
-  const getProp = <T>(key: string, defaultValue: T): T => {
+  const getProp = function<T>(key: string, defaultValue: T): T {
     const value = componentProps[key];
     return value !== undefined ? (value as T) : defaultValue;
   };

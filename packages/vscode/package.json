@@ -17,7 +17,6 @@
     "mvvm",
     "design-tools"
   ],
-  "icon": "resources/icon.png",
   "activationEvents": [
     "onLanguage:javascript",
     "onLanguage:typescript",
@@ -26,6 +25,13 @@
     "workspaceContains:**/*.view.vrn"
   ],
   "main": "./dist/extension.js",
+  "files": [
+    "dist/",
+    "webview/",
+    "language-configuration.json",
+    "LICENSE",
+    "package.json"
+  ],
   "contributes": {
     "commands": [
       {

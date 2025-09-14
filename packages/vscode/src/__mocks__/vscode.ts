@@ -1,33 +1,33 @@
-// Mock VSCode API for testing
+// Mock VSCode API for production build (Jest not available)
 export const workspace = {
-  getConfiguration: jest.fn(() => ({
-    get: jest.fn(),
-    update: jest.fn(),
-  })),
+  getConfiguration: () => ({
+    get: () => {},
+    update: () => {},
+  }),
   workspaceFolders: [],
-  onDidChangeConfiguration: jest.fn(),
+  onDidChangeConfiguration: () => {},
 };
 
 export const window = {
-  showErrorMessage: jest.fn(),
-  showWarningMessage: jest.fn(),
-  showInformationMessage: jest.fn(),
-  createOutputChannel: jest.fn(() => ({
-    append: jest.fn(),
-    appendLine: jest.fn(),
-    show: jest.fn(),
-    dispose: jest.fn(),
-  })),
+  showErrorMessage: () => {},
+  showWarningMessage: () => {},
+  showInformationMessage: () => {},
+  createOutputChannel: () => ({
+    append: () => {},
+    appendLine: () => {},
+    show: () => {},
+    dispose: () => {},
+  }),
 };
 
 export const commands = {
-  registerCommand: jest.fn(),
-  executeCommand: jest.fn(),
+  registerCommand: () => {},
+  executeCommand: () => {},
 };
 
 export const Uri = {
-  file: jest.fn((path: string) => ({ fsPath: path, path })),
-  parse: jest.fn(),
+  file: (path: string) => ({ fsPath: path, path }),
+  parse: () => {},
 };
 
 export const ViewColumn = {
@@ -36,13 +36,13 @@ export const ViewColumn = {
   Three: 3,
 };
 
-export const WebviewPanel = jest.fn();
+export const WebviewPanel = () => {};
 
 export const Disposable = {
-  from: jest.fn(),
+  from: () => {},
 };
 
-export const ExtensionContext = jest.fn();
+export const ExtensionContext = () => {};
 
 export enum ConfigurationTarget {
   Global = 1,

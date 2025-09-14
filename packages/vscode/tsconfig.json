@@ -20,6 +20,8 @@
     ".vscode-test",
     "dist",
     "src/webview/**/*",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "src/__tests__/**/*",
+    "src/__mocks__/**/*"
   ]
 }
