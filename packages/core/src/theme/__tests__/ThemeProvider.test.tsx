@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react-native';
+import { render } from '@testing-library/react';
 import { Text } from 'react-native';
 import { ThemeProvider } from '../ThemeProvider';
 import { useTheme } from '../../hooks/useTheme';
@@ -18,7 +18,7 @@ describe('ThemeProvider', () => {
     );
     
     const element = getByTestId('theme-test');
-    expect(element.children[0]).toBe('#007AFF');
+    expect(element.textContent).toBe('#007AFF');
   });
 
   it('allows theme customization', () => {
@@ -46,7 +46,7 @@ describe('ThemeProvider', () => {
     );
     
     const element = getByTestId('theme-test');
-    expect(element.children[0]).toBe('#FF6B35');
+    expect(element.textContent).toBe('#FF6B35');
   });
 
   it('handles dark mode colors', () => {
@@ -62,7 +62,7 @@ describe('ThemeProvider', () => {
     );
     
     const element = getByTestId('dark-test');
-    expect(element.children[0]).toBe('#FFFFFF'); // Dark mode text color
+    expect(element.textContent).toBe('#FFFFFF'); // Dark mode text color
   });
 
   it('throws error when useTheme is used without provider', () => {
@@ -93,6 +93,6 @@ describe('ThemeProvider', () => {
     );
     
     const element = getByTestId('context-test');
-    expect(element.children[0]).toBe('#007AFF-true-16');
+    expect(element.textContent).toBe('#007AFF-true-16');
   });
 });

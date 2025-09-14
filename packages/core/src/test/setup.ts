@@ -10,7 +10,7 @@ jest.mock('react-native', () => {
   
   // Create wrapper components that handle RN props properly
   const View = React.forwardRef((props: any, ref: any) => {
-    const { children, style, testID, ...rest } = props;
+    const { children, style, testID, contentContainerStyle, showsVerticalScrollIndicator, showsHorizontalScrollIndicator, ...rest } = props;
     return React.createElement('div', { ...rest, ref, style, 'data-testid': testID }, children);
   });
 
