@@ -1,5 +1,5 @@
 import React from 'react';
-import { VRNComponent } from '../store';
+import { type VRNComponent } from '../store';
 interface ComponentRendererProps {
     component: VRNComponent;
     isSelected: boolean;
