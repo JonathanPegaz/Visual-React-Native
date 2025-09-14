@@ -16,4 +16,5 @@ module.exports = {
     '^vscode$': '<rootDir>/src/__mocks__/vscode',
   },
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 };

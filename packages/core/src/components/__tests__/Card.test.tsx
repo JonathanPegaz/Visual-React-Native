@@ -1,6 +1,7 @@
 import { fireEvent } from '@testing-library/react';
 // React Native components (View, Text, TouchableOpacity) are rendered as DOM elements
 import { Card } from '../Card';
+import { Text } from 'react-native';
 import { customRender } from '../../test/setup';
 
 const renderWithTheme = customRender;
